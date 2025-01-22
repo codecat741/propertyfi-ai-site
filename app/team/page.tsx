@@ -11,19 +11,19 @@ export default function TeamPage() {
       name: "Cory Decker",
       role: "Co-founder & Chief Executive Officer",
       description: "A visionary leader driving innovation with deep expertise in AI and scalable solutions for property intelligence.",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80"
+      image: "/images/team/cory-decker.jpeg"
     },
     {
       name: "Brian Decker",
       role: "Co-founder & Chief Growth Officer",
       description: "An accomplished leader with 20+ years in finance, real estate, and energy software.",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80"
+      image: "/images/team/brian-decker.webp"
     },
     {
       name: "Scott Couto",
       role: "Co-founder & Chief Revenue Officer",
       description: "Growth leader with deep expertise in national sales strategy and lead generation.",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80"
+      image: "/images/team/scott-couto.webp"
     }
   ];
 
@@ -32,7 +32,7 @@ export default function TeamPage() {
       name: "Drew Logan",
       role: "Strategy Consultant",
       description: "Entrepreneur and strategist dedicated to accelerating business success.",
-      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80"
+      image: "/images/team/drew-logan.webp"
     }
   ];
 
@@ -49,8 +49,20 @@ export default function TeamPage() {
           {/* Blueprint Lines */}
           <svg className="absolute inset-0 w-full h-full opacity-30">
             <defs>
-              <pattern id="blueprint" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                <path d="M 0 50 L 100 50 M 50 0 L 50 100" className="stroke-[#00FFD1]/20" strokeWidth="0.5" fill="none" />
+              <pattern
+                id="blueprint"
+                x="0"
+                y="0"
+                width="100"
+                height="100"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 0 50 L 100 50 M 50 0 L 50 100"
+                  className="stroke-[#00FFD1]/20"
+                  strokeWidth="0.5"
+                  fill="none"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#blueprint)" />
@@ -85,12 +97,12 @@ export default function TeamPage() {
             <div className="grid md:grid-cols-3 gap-12">
               {leaders.map((leader) => (
                 <div key={leader.name} className="group">
-                  <div className="relative h-96 mb-6 rounded-lg overflow-hidden">
+                  <div className="relative aspect-square mb-6 rounded-lg overflow-hidden">
                     <Image
                       src={leader.image}
                       alt={leader.name}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-contain transition-transform duration-500 group-hover:scale-105 bg-white"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#151849]/90 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-8">
@@ -116,7 +128,9 @@ export default function TeamPage() {
                   <Target className="h-8 w-8 text-[#00FFD1]" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">Innovation First</h3>
-                <p className="text-gray-600">Pushing boundaries to create cutting-edge solutions that transform industries.</p>
+                <p className="text-gray-600">
+                  Pushing boundaries to create cutting-edge solutions that transform industries.
+                </p>
               </div>
 
               <div className="bg-white p-8 rounded-lg shadow-sm">
@@ -124,7 +138,9 @@ export default function TeamPage() {
                   <Brain className="h-8 w-8 text-[#00A3FF]" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">Expert Knowledge</h3>
-                <p className="text-gray-600">Deep industry expertise combined with advanced technological capabilities.</p>
+                <p className="text-gray-600">
+                  Deep industry expertise combined with advanced technological capabilities.
+                </p>
               </div>
 
               <div className="bg-white p-8 rounded-lg shadow-sm">
@@ -132,7 +148,9 @@ export default function TeamPage() {
                   <LineChart className="h-8 w-8 text-[#FF00E5]" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">Proven Results</h3>
-                <p className="text-gray-600">Delivering measurable impact and driving growth for our clients.</p>
+                <p className="text-gray-600">
+                  Delivering measurable impact and driving growth for our clients.
+                </p>
               </div>
             </div>
           </div>
@@ -147,12 +165,12 @@ export default function TeamPage() {
             <div className="grid md:grid-cols-1 gap-12 max-w-2xl mx-auto">
               {advisors.map((advisor) => (
                 <div key={advisor.name} className="group">
-                  <div className="relative h-96 mb-6 rounded-lg overflow-hidden">
+                  <div className="relative aspect-square mb-6 rounded-lg overflow-hidden">
                     <Image
                       src={advisor.image}
                       alt={advisor.name}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-contain transition-transform duration-500 group-hover:scale-105 bg-white"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#151849]/90 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-8">
@@ -168,13 +186,13 @@ export default function TeamPage() {
         </div>
       </section>
 
-      <QuoteSection 
+      <QuoteSection
         quote="We are a team of innovators committed to driving industry change through AI-powered insights."
         author="Cory Decker"
         role="Co-founder & Chief Executive Officer"
       />
 
-      <CTASection 
+      <CTASection
         title="Join Us in Shaping the Future"
         buttonText="Contact Us"
         buttonHref="/contact"
