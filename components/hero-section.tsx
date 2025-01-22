@@ -276,7 +276,7 @@ export function HeroSection() {
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
               <div className="relative h-32 mb-4 rounded-lg overflow-hidden">
                 <Image
-                  src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&q=80"
+                  src="/images/tech/ground-level.jpg"
                   alt="Ground-level property view"
                   fill
                   className="object-cover"
@@ -288,7 +288,7 @@ export function HeroSection() {
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
               <div className="relative h-32 mb-4 rounded-lg overflow-hidden">
                 <Image
-                  src="https://images.unsplash.com/photo-1599619351208-3e6c839d6828?auto=format&fit=crop&q=80"
+                  src="/images/tech/modern-roof-analysis.jpeg"
                   alt="Aerial property view"
                   fill
                   className="object-cover"

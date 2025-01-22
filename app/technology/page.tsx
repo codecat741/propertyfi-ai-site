@@ -98,7 +98,7 @@ export default function TechnologyPage() {
               <div className="space-y-6">
                 <div className="relative h-48 mb-6 rounded-lg overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1590859808308-3d2d9c515b1a?auto=format&fit=crop&q=80"
+                    src="images/tech/modern-roof-analysis.jpeg"
                     alt="Lead generation visualization"
                     fill
                     className="object-cover"

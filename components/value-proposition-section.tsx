@@ -12,7 +12,7 @@ export function ValuePropositionSection() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="relative h-[500px] rounded-lg overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1590859808308-3d2d9c515b1a?auto=format&fit=crop&q=80"
+                src="/images/tech/property-analysis.jpg"
                 alt="AI analyzing property"
                 fill
                 className="object-cover"
