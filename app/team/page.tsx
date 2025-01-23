@@ -23,7 +23,7 @@ export default function TeamPage() {
       name: "Scott Couto",
       role: "Co-founder & Chief Revenue Officer",
       description: "Growth leader with deep expertise in national sales strategy and lead generation.",
-      image: "/images/team/scott-couto.webp"
+      image: "/images/team/scott-couto.jpeg"
     }
   ];
 
