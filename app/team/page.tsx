@@ -17,7 +17,7 @@ export default function TeamPage() {
       name: "Brian Decker",
       role: "Co-founder & Chief Growth Officer",
       description: "A strategic growth leader with 20+ years driving revenue across finance and real estate sectors, specializing in transformative sales leadership.",
-      image: "/images/team/brian-decker.webp"
+      image: "/images/team/brian-decker.jpeg"
     },
     {
       name: "Scott Couto",
