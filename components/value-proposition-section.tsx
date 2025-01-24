@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, LineChart, Scan, Target, Wrench, Shield } from "lucide-react";
+import { Building2, LineChart, Scan, Target, Wrench, Shield, Cpu, Zap } from "lucide-react";
 import Image from "next/image";
 
 export function ValuePropositionSection() {
@@ -35,7 +35,7 @@ export function ValuePropositionSection() {
             <div>
               <h2 className="text-3xl font-bold mb-6">Real-Time Property Analysis</h2>
               <p className="text-gray-600 mb-8">
-                Our AI combines high-resolution aerial and ground imagery with insurance provider data to identify high-probability leads for property service providers.
+                Our AI combines high-resolution aerial and ground imagery with insurance provider data to deliver actionable insights for property service providers.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start">
@@ -92,29 +92,84 @@ export function ValuePropositionSection() {
           </div>
         </div>
 
-        {/* Results Section */}
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
+        {/* Solutions Section */}
+        <div className="max-w-6xl mx-auto mb-24">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Two Ways to Leverage Our Technology</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Both solutions require zero technical setup—start getting insights immediately.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-12">
+            {/* Lead Generation Service */}
             <div className="bg-gray-50 p-8 rounded-lg">
-              <div className="text-4xl font-bold text-[#00FFD1] mb-4">47%</div>
-              <h3 className="text-xl font-bold mb-2">Higher Close Rate</h3>
-              <p className="text-gray-600">
-                Our AI-qualified leads convert at nearly double the industry average
+              <div className="w-16 h-16 rounded-full bg-[#00FFD1]/20 flex items-center justify-center mb-6">
+                <Target className="h-8 w-8 text-[#00FFD1]" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Lead Generation Service</h3>
+              <p className="text-gray-600 mb-8">
+                Ready-to-use lead generation service that delivers qualified prospects directly to your inbox.
               </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center">
+                  <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
+                  <span>Pre-qualified leads</span>
+                </div>
+                <div className="flex items-center">
+                  <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
+                  <span>48-hour delivery</span>
+                </div>
+                <div className="flex items-center">
+                  <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
+                  <span>Start receiving leads today</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-3xl font-bold text-[#00FFD1]">47%</div>
+                  <p className="text-sm text-gray-600">Higher Close Rate</p>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-[#00FFD1]">3.2x</div>
+                  <p className="text-sm text-gray-600">ROI Improvement</p>
+                </div>
+              </div>
             </div>
+
+            {/* Custom AI Solutions */}
             <div className="bg-gray-50 p-8 rounded-lg">
-              <div className="text-4xl font-bold text-[#00A3FF] mb-4">3.2x</div>
-              <h3 className="text-xl font-bold mb-2">ROI Improvement</h3>
-              <p className="text-gray-600">
-                Average return on marketing spend with AI-driven targeting
+              <div className="w-16 h-16 rounded-full bg-[#FF00E5]/20 flex items-center justify-center mb-6">
+                <Cpu className="h-8 w-8 text-[#FF00E5]" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Custom AI Solutions</h3>
+              <p className="text-gray-600 mb-8">
+                Enterprise-grade AI solutions that work with your existing systems—no development team needed.
               </p>
-            </div>
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <div className="text-4xl font-bold text-[#FF00E5] mb-4">86%</div>
-              <h3 className="text-xl font-bold mb-2">Accuracy Rate</h3>
-              <p className="text-gray-600">
-                In identifying property opportunities
-              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center">
+                  <Zap className="h-5 w-5 text-[#FF00E5] mr-2" />
+                  <span>Seamless integration</span>
+                </div>
+                <div className="flex items-center">
+                  <Zap className="h-5 w-5 text-[#FF00E5] mr-2" />
+                  <span>Dedicated AI models</span>
+                </div>
+                <div className="flex items-center">
+                  <Zap className="h-5 w-5 text-[#FF00E5] mr-2" />
+                  <span>Zero technical overhead</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-3xl font-bold text-[#FF00E5]">86%</div>
+                  <p className="text-sm text-gray-600">AI Accuracy</p>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-[#FF00E5]">2.4M+</div>
+                  <p className="text-sm text-gray-600">Properties Analyzed</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

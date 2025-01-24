@@ -9,20 +9,20 @@ export default function TeamPage() {
   const leaders = [
     {
       name: "Cory Decker",
-      role: "Co-founder & Chief Executive Officer",
-      description: "A visionary leader driving innovation with deep expertise in AI and scalable solutions for property intelligence.",
+      role: "Co-founder & CEO",
+      description: "A visionary leader driving innovation with 15+ years building scalable software solutions and pioneering AI applications.",
       image: "/images/team/cory-decker.jpeg"
     },
     {
       name: "Brian Decker",
       role: "Co-founder & Chief Growth Officer",
-      description: "An accomplished leader with 20+ years in finance, real estate, and energy software.",
-      image: "/images/team/brian-decker.webp"
+      description: "A strategic growth leader with 20+ years driving revenue across finance and real estate sectors, specializing in transformative sales leadership.",
+      image: "/images/team/brian-decker.jpeg"
     },
     {
       name: "Scott Couto",
-      role: "Co-founder & Chief Revenue Officer",
-      description: "Growth leader with deep expertise in national sales strategy and lead generation.",
+      role: "Co-founder & Marketing Consultant",
+      description: "Growth leader with deep expertise in direct marketing and sales strategy with 20+ years in lead generation.",
       image: "/images/team/scott-couto.jpeg"
     }
   ];
@@ -97,19 +97,18 @@ export default function TeamPage() {
             <div className="grid md:grid-cols-3 gap-12">
               {leaders.map((leader) => (
                 <div key={leader.name} className="group">
-                  <div className="relative aspect-square mb-6 rounded-lg overflow-hidden">
+                  <div className="relative aspect-[3/4] mb-6 rounded-lg overflow-hidden bg-gray-100">
                     <Image
                       src={leader.image}
                       alt={leader.name}
                       fill
-                      className="object-contain transition-transform duration-500 group-hover:scale-105 bg-white"
+                      className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#151849]/90 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-8">
-                      <h3 className="text-2xl font-bold text-white mb-2">{leader.name}</h3>
-                      <p className="text-[#00FFD1] font-medium mb-4">{leader.role}</p>
-                      <p className="text-white/80">{leader.description}</p>
-                    </div>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-[#151849] mb-2">{leader.name}</h3>
+                    <p className="text-lg font-medium text-[#151849]/80 mb-4">{leader.role}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">{leader.description}</p>
                   </div>
                 </div>
               ))}
@@ -162,22 +161,21 @@ export default function TeamPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold mb-16 text-center">Strategic Advisors</h2>
-            <div className="grid md:grid-cols-1 gap-12 max-w-2xl mx-auto">
+            <div className="grid md:grid-cols-1 gap-12 max-w-xs mx-auto">
               {advisors.map((advisor) => (
                 <div key={advisor.name} className="group">
-                  <div className="relative aspect-square mb-6 rounded-lg overflow-hidden">
+                  <div className="relative aspect-[3/4] mb-6 rounded-lg overflow-hidden bg-gray-100">
                     <Image
                       src={advisor.image}
                       alt={advisor.name}
                       fill
-                      className="object-contain transition-transform duration-500 group-hover:scale-105 bg-white"
+                      className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#151849]/90 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-8">
-                      <h3 className="text-2xl font-bold text-white mb-2">{advisor.name}</h3>
-                      <p className="text-[#00FFD1] font-medium mb-4">{advisor.role}</p>
-                      <p className="text-white/80">{advisor.description}</p>
-                    </div>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-[#151849] mb-2">{advisor.name}</h3>
+                    <p className="text-lg font-medium text-[#151849]/80 mb-4">{advisor.role}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">{advisor.description}</p>
                   </div>
                 </div>
               ))}

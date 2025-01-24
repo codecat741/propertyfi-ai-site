@@ -8,9 +8,28 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'PropertyFi - AI-Powered Real Estate Technology',
-  description: 'Transform your real estate portfolio with AI-driven insights and automation.',
-  keywords: 'real estate, AI, property technology, proptech, real estate investment',
+  title: 'PropertyFi - AI-Powered Lead Generation for Property Services',
+  description: 'Our AI analyzes high-resolution aerial and ground-level imagery to identify property improvement opportunities with 86% accuracy—delivering actionable insight directly to service providers.',
+  keywords: 'property services, AI lead generation, roofing leads, property maintenance, restoration leads, artificial turf leads',
+  openGraph: {
+    title: 'PropertyFi - AI-Powered Lead Generation for Property Services',
+    description: 'Our AI analyzes high-resolution aerial and ground-level imagery to identify property improvement opportunities with 86% accuracy—delivering actionable insight directly to service providers.',
+    images: [
+      {
+        url: '/images/tech/property-analysis.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'AI-powered property analysis visualization',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PropertyFi - AI-Powered Lead Generation for Property Services',
+    description: 'Our AI analyzes high-resolution aerial and ground-level imagery to identify property improvement opportunities with 86% accuracy—delivering actionable insight directly to service providers.',
+    images: ['/images/tech/property-analysis.jpg'],
+  },
 };
 
 export default function RootLayout({

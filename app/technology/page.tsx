@@ -9,7 +9,6 @@ import Image from "next/image";
 export default function TechnologyPage() {
   return (
     <main className="flex flex-col min-h-screen">
-      {/* Hero Section remains the same */}
       <section className="relative pt-32 pb-24 overflow-hidden">
         {/* Background Canvas */}
         <div className="absolute inset-0 z-0">
@@ -47,38 +46,30 @@ export default function TechnologyPage() {
         <div className="container relative z-10 mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl lg:text-7xl font-bold mb-6 tracking-tight text-white leading-[1.1]">
-              Purpose-Built for Property Services
+              Advanced AI Technology for Every Business
             </h1>
             <p className="text-xl mb-12 text-white/80 max-w-2xl mx-auto">
-              Transform your property service business with AI-powered lead generation and insights—no technical expertise required.
+              Whether you're a small contractor or a large corporation, our AI solutions scale to your needs—from turnkey lead generation to custom integrations.
             </p>
           </div>
 
           <div className="mt-20 max-w-5xl mx-auto">
             <div className="relative bg-white/5 backdrop-blur-sm rounded-lg p-8 border border-white/10">
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-2 gap-8">
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-300">
                   <div className="w-16 h-16 rounded-full bg-[#00FFD1]/20 flex items-center justify-center mb-4">
                     <Target className="h-8 w-8 text-[#00FFD1]" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">Ready-to-Use Leads</h3>
-                  <p className="text-white/80">Identify and target ideal properties with detailed insights.</p>
-                </div>
-                
-                <div className="flex flex-col items-center text-center p-6 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-300">
-                  <div className="w-16 h-16 rounded-full bg-[#00A3FF]/20 flex items-center justify-center mb-4">
-                    <Wrench className="h-8 w-8 text-[#00A3FF]" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">Zero Tech Setup</h3>
-                  <p className="text-white/80">Immediate implementation with no development team needed.</p>
+                  <h3 className="text-lg font-semibold mb-2 text-white">Lead Generation Service</h3>
+                  <p className="text-white/80">Perfect for businesses of any size—get qualified leads delivered directly to your inbox.</p>
                 </div>
                 
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-300">
                   <div className="w-16 h-16 rounded-full bg-[#FF00E5]/20 flex items-center justify-center mb-4">
-                    <Users className="h-8 w-8 text-[#FF00E5]" />
+                    <Cpu className="h-8 w-8 text-[#FF00E5]" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">Industry Expertise</h3>
-                  <p className="text-white/80">Purpose-built solutions with deep domain knowledge.</p>
+                  <h3 className="text-lg font-semibold mb-2 text-white">Custom AI Solutions</h3>
+                  <p className="text-white/80">Tailored AI integration that scales with your business needs—from small teams to large operations.</p>
                 </div>
               </div>
             </div>
@@ -91,15 +82,15 @@ export default function TechnologyPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-12 text-center">
-              Key Tech Features
+              Core Technology Features
             </h2>
             <div className="grid md:grid-cols-2 gap-12">
-              {/* Ready-to-Use Lead Generation */}
+              {/* Computer Vision */}
               <div className="space-y-6">
                 <div className="relative h-48 mb-6 rounded-lg overflow-hidden">
                   <Image
-                    src="images/tech/modern-roof-analysis.jpeg"
-                    alt="Lead generation visualization"
+                    src="/images/tech/modern-roof-analysis.jpeg"
+                    alt="AI vision analysis"
                     fill
                     className="object-cover"
                   />
@@ -109,32 +100,32 @@ export default function TechnologyPage() {
                     <div className="absolute bottom-1/3 right-1/4 w-16 h-16 border-2 border-[#00FFD1] rounded-lg opacity-50 animate-pulse [animation-delay:1s]" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold">Ready-to-Use Lead Generation</h3>
+                <h3 className="text-2xl font-bold">Advanced Computer Vision</h3>
                 <p className="text-gray-600">
-                  Instantly identify and target ideal properties with detailed insights to grow your customer base.
+                  Our AI processes high-resolution imagery to detect property features, conditions, and opportunities with exceptional accuracy.
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-center">
                     <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
-                    <span>Identify service opportunities</span>
+                    <span>Multi-angle analysis</span>
                   </li>
                   <li className="flex items-center">
                     <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
-                    <span>Target ideal properties</span>
+                    <span>Feature detection</span>
                   </li>
                   <li className="flex items-center">
                     <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
-                    <span>Get detailed property insights</span>
+                    <span>Damage assessment</span>
                   </li>
                 </ul>
               </div>
 
-              {/* Zero Technical Requirements */}
+              {/* Machine Learning */}
               <div className="space-y-6">
                 <div className="relative h-48 mb-6 rounded-lg overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80"
-                    alt="Simple implementation visualization"
+                    src="/images/tech/property-analysis.jpg"
+                    alt="Machine learning visualization"
                     fill
                     className="object-cover"
                   />
@@ -143,22 +134,22 @@ export default function TechnologyPage() {
                     <LineChart className="h-24 w-24 text-[#00FFD1] animate-pulse" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold">Zero Technical Requirements</h3>
+                <h3 className="text-2xl font-bold">Predictive Analytics</h3>
                 <p className="text-gray-600">
-                  Get started immediately with no development team or API integration needed.
+                  Machine learning models analyze multiple data sources to predict property service needs and opportunities.
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-center">
                     <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
-                    <span>No development team needed</span>
+                    <span>Pattern recognition</span>
                   </li>
                   <li className="flex items-center">
                     <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
-                    <span>Immediate implementation</span>
+                    <span>Risk assessment</span>
                   </li>
                   <li className="flex items-center">
                     <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
-                    <span>Automated delivery</span>
+                    <span>Opportunity scoring</span>
                   </li>
                 </ul>
               </div>
@@ -167,35 +158,67 @@ export default function TechnologyPage() {
         </div>
       </section>
 
-      {/* Industry Expertise Section */}
+      {/* Implementation Options */}
       <section className="py-24 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-12 text-center">
-              Built for Property Services
+              Choose Your Implementation
             </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="p-6 bg-white rounded-lg shadow-sm">
-                <Building2 className="h-12 w-12 text-[#00FFD1] mb-4" />
-                <h3 className="text-xl font-bold mb-4">Purpose-Built Solutions</h3>
-                <p className="text-gray-600">
-                  Specifically designed for property service professionals and contractors.
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="p-8 bg-white rounded-lg shadow-sm">
+                <div className="w-16 h-16 rounded-full bg-[#00FFD1]/20 flex items-center justify-center mb-6">
+                  <Target className="h-8 w-8 text-[#00FFD1]" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Lead Generation Service</h3>
+                <ul className="space-y-4 mb-6">
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
+                    <span>Pre-qualified leads delivered to your inbox</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
+                    <span>48-hour turnaround time</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
+                    <span>No technical setup needed</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#00FFD1] mr-2" />
+                    <span>Detailed property reports included</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-gray-600">
+                  Perfect for businesses of all sizes looking for qualified leads without any technical overhead.
                 </p>
               </div>
               
-              <div className="p-6 bg-white rounded-lg shadow-sm">
-                <Cpu className="h-12 w-12 text-[#00FFD1] mb-4" />
-                <h3 className="text-xl font-bold mb-4">Deep Domain Knowledge</h3>
-                <p className="text-gray-600">
-                  Built with extensive industry expertise and understanding.
-                </p>
-              </div>
-              
-              <div className="p-6 bg-white rounded-lg shadow-sm">
-                <LineChart className="h-12 w-12 text-[#00FFD1] mb-4" />
-                <h3 className="text-xl font-bold mb-4">Industry-Specific Targeting</h3>
-                <p className="text-gray-600">
-                  Tailored lead generation for your specific service area.
+              <div className="p-8 bg-white rounded-lg shadow-sm">
+                <div className="w-16 h-16 rounded-full bg-[#FF00E5]/20 flex items-center justify-center mb-6">
+                  <Cpu className="h-8 w-8 text-[#FF00E5]" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Custom AI Solutions</h3>
+                <ul className="space-y-4 mb-6">
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#FF00E5] mr-2" />
+                    <span>Flexible API integration options</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#FF00E5] mr-2" />
+                    <span>Tailored to your workflow</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#FF00E5] mr-2" />
+                    <span>Real-time analysis capabilities</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Zap className="h-5 w-5 text-[#FF00E5] mr-2" />
+                    <span>Dedicated support team</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-gray-600">
+                  Scalable solutions that grow with your business—from small teams to large operations.
                 </p>
               </div>
             </div>
@@ -204,13 +227,13 @@ export default function TechnologyPage() {
       </section>
 
       <QuoteSection 
-        quote="Our technology turns property data into actionable opportunities, helping service providers grow their business without the technical overhead."
+        quote="Our technology adapts to businesses of all sizes, delivering powerful AI capabilities without the technical complexity."
         author="Cory Decker"
-        role="Chief Technology Officer"
+        role="CEO"
       />
 
       <CTASection 
-        title="Ready to Grow Your Service Business?"
+        title="Ready to Transform Your Business?"
         buttonText="Get Started"
         buttonHref="/contact"
       />

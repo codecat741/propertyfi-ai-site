@@ -38,11 +38,27 @@ export default function AboutPage() {
         <div className="container relative z-10 mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl lg:text-7xl font-bold mb-6 tracking-tight text-white leading-[1.1]">
-              Revolutionizing Property Services with AI
+              Transforming Property Services Through AI Innovation
             </h1>
             <p className="text-xl mb-12 text-white/80 max-w-2xl mx-auto">
-              We're transforming the property services industry through AI-powered analysis and intelligent lead generation.
+              From turnkey lead generation to custom enterprise solutions, we're revolutionizing how property service providers leverage AI for growth and efficiency.
             </p>
+            <div className="grid md:grid-cols-2 gap-8 mt-16">
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
+                <div className="w-16 h-16 rounded-full bg-[#00FFD1]/20 flex items-center justify-center mx-auto mb-4">
+                  <Target className="h-8 w-8 text-[#00FFD1]" />
+                </div>
+                <h3 className="text-white font-semibold mb-2">Lead Generation</h3>
+                <p className="text-white/70">Ready-to-use qualified leads delivered directly to your inbox</p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
+                <div className="w-16 h-16 rounded-full bg-[#FF00E5]/20 flex items-center justify-center mx-auto mb-4">
+                  <Cpu className="h-8 w-8 text-[#FF00E5]" />
+                </div>
+                <h3 className="text-white font-semibold mb-2">Custom AI Solutions</h3>
+                <p className="text-white/70">Tailored AI integration for enterprise-scale operations</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -63,12 +79,12 @@ export default function AboutPage() {
               <div className="absolute inset-0">
                 <div className="absolute top-1/4 left-1/4 w-32 h-32 border-2 border-[#00FFD1] rounded-lg animate-pulse">
                   <div className="absolute -top-6 left-2 bg-[#00FFD1] text-[#151849] px-2 py-1 text-sm rounded">
-                    Roof Analysis
+                    3-Tab Shingle
                   </div>
                 </div>
                 <div className="absolute bottom-1/3 right-1/4 w-24 h-24 border-2 border-[#FF00E5] rounded-lg animate-pulse [animation-delay:1s]">
                   <div className="absolute -top-6 left-2 bg-[#FF00E5] text-white px-2 py-1 text-sm rounded">
-                    Storm Damage
+                    Hail Damage
                   </div>
                 </div>
               </div>
@@ -76,7 +92,7 @@ export default function AboutPage() {
 
             <h2 className="text-3xl font-bold mb-6">Our Story</h2>
             <p className="text-lg text-gray-600 mb-16">
-              PropertyFi was founded with a vision to revolutionize the property services industry through advanced AI technology. By combining cutting-edge machine learning with comprehensive property data analysis, we've created a platform that delivers highly qualified leads to service providers—helping businesses identify opportunities and grow more efficiently than ever before.
+              PropertyFi was founded with a vision to revolutionize the property services industry through advanced AI technology. By combining cutting-edge machine learning with comprehensive property data analysis, we've created a platform that not only delivers highly qualified leads but also provides custom AI solutions that help businesses identify opportunities and grow more efficiently than ever before.
             </p>
 
             <div className="grid md:grid-cols-2 gap-12">
@@ -84,7 +100,7 @@ export default function AboutPage() {
               <div className="relative">
                 <div className="relative h-48 mb-6 rounded-lg overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1599619351208-3e6c839d6828?auto=format&fit=crop&q=80"
+                    src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80"
                     alt="Aerial property analysis"
                     fill
                     className="object-cover"
@@ -97,7 +113,7 @@ export default function AboutPage() {
                 <div className="bg-gray-50 p-8 rounded-lg">
                   <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
                   <p className="text-gray-600">
-                    To revolutionize how property service providers identify, qualify, and win new business opportunities through AI-powered insights and automation.
+                    To revolutionize how property service providers leverage AI technology for business growth, whether through our turnkey lead generation or custom enterprise solutions.
                   </p>
                 </div>
               </div>
@@ -119,7 +135,7 @@ export default function AboutPage() {
                 <div className="bg-gray-50 p-8 rounded-lg">
                   <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
                   <p className="text-gray-600">
-                    To empower property service providers with AI-driven insights that increase win rates, reduce costs, and accelerate business growth.
+                    To empower property service providers with AI-driven insights and solutions that increase win rates, reduce costs, and accelerate business growth.
                   </p>
                 </div>
               </div>
@@ -146,7 +162,7 @@ export default function AboutPage() {
                 <LineChart className="h-8 w-8 text-[#00A3FF]" />
               </div>
               <h3 className="text-xl font-bold mb-4">Proven Results</h3>
-              <p className="text-gray-600">86% accuracy in identifying qualified leads and opportunities.</p>
+              <p className="text-gray-600">86% accuracy in identifying qualified opportunities.</p>
             </div>
 
             <div className="bg-white p-8 rounded-lg shadow-sm">
@@ -167,7 +183,7 @@ export default function AboutPage() {
       />
 
       <CTASection 
-        title="Ready to Transform Your Lead Generation?"
+        title="Ready to Transform Your Business?"
         buttonText="Contact Us"
         buttonHref="/contact"
       />

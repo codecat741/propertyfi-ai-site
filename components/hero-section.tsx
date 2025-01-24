@@ -249,16 +249,16 @@ export function HeroSection() {
           <div className="flex items-center justify-center space-x-8 mb-12">
             <div className="text-white/80 text-sm font-medium">TRUSTED BY</div>
             <div className="flex items-center space-x-8">
-              <div className="text-white/90 font-semibold">NASA</div>
-              <div className="text-white/90 font-semibold">APPLE</div>
+              <div className="text-white/90 font-semibold">ATI</div>
+              <div className="text-white/90 font-semibold">SRG</div>
             </div>
           </div>
           
           <h1 className="text-5xl lg:text-7xl font-bold mb-6 tracking-tight text-white leading-[1.1]">
-            AI-Powered Lead Generation for Property Services
+            AI-Powered Solutions for Property Services
           </h1>
           <p className="text-xl mb-8 text-white/80 max-w-2xl mx-auto">
-            Our AI analyzes high-resolution aerial and ground-level imagery to identify property improvement opportunities with 86% accuracy—delivering qualified leads directly to service providers.
+            Our AI analyzes high-resolution aerial and ground-level imagery to identify property improvement opportunities with 86% accuracy—delivering actionable insight directly to service providers.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="/contact">
@@ -303,7 +303,7 @@ export function HeroSection() {
           <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-16 text-white">
             <div className="text-center">
               <div className="text-3xl font-bold text-[#00FFD1] mb-2">86%</div>
-              <div className="text-sm text-white/80">Lead Accuracy</div>
+              <div className="text-sm text-white/80">AI Accuracy</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-[#00FFD1] mb-2">2.4M</div>
@@ -311,7 +311,7 @@ export function HeroSection() {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-[#00FFD1] mb-2">48hr</div>
-              <div className="text-sm text-white/80">Lead Delivery</div>
+              <div className="text-sm text-white/80">Data Delivery</div>
             </div>
           </div>
         </div>
