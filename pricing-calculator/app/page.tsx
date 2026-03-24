@@ -251,10 +251,39 @@ function PfiVolumeTable({
   );
 }
 
+/* ── ROI Metric Card ────────────────────────────────────────────────── */
+function RoiMetric({
+  label,
+  value,
+  color = 'text-white',
+  size = 'lg',
+}: {
+  label: string;
+  value: string;
+  color?: string;
+  size?: 'lg' | 'sm';
+}) {
+  return (
+    <div>
+      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+        {label}
+      </p>
+      <p
+        className={cn(
+          'font-bold',
+          size === 'lg' ? 'text-2xl' : 'text-xl',
+          color
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
 /* ── ROI Estimate Tab Component ─────────────────────────────────────── */
 function RoiEstimateTab({
   pricingState,
-  breakdown,
   roiVertical,
   setRoiVertical,
   avgSalePrice,
@@ -263,7 +292,6 @@ function RoiEstimateTab({
   setWinRate,
 }: {
   pricingState: PricingState;
-  breakdown: ReturnType<typeof calculateBreakdown>;
   roiVertical: string;
   setRoiVertical: (v: string) => void;
   avgSalePrice: number;
@@ -271,7 +299,18 @@ function RoiEstimateTab({
   winRate: number;
   setWinRate: (v: number) => void;
 }) {
-  const selectedVertical = VERTICALS.find((v) => v.name === roiVertical) || VERTICALS[5];
+  const selectedVertical =
+    VERTICALS.find((v) => v.name === roiVertical) || VERTICALS[5];
+
+  // Always compute both breakdowns
+  const baseBreakdown = useMemo(
+    () => calculateBreakdown({ ...pricingState, propertyFiEnabled: false }),
+    [pricingState]
+  );
+  const pfiBreakdown = useMemo(
+    () => calculateBreakdown({ ...pricingState, propertyFiEnabled: true }),
+    [pricingState]
+  );
 
   // SMS sends = credits / 3 (1 SMS = 3 credits)
   const estSmsSends = Math.floor(pricingState.creditQty / 3);
@@ -279,36 +318,42 @@ function RoiEstimateTab({
   // Determine active channels
   const hasEmail = pricingState.emailQty > 0;
   const hasDfy = pricingState.dfyQty > 0;
-  const hasPfi = pricingState.propertyFiEnabled;
-
-  // Base conversion = SMS
-  const smsConversion = selectedVertical.smsBase / 100;
-  const emailConversion = hasEmail ? selectedVertical.email / 100 : 0;
-  const dfyConversion = hasDfy ? selectedVertical.dfy / 100 : 0;
-  const baseTotal = smsConversion + emailConversion + dfyConversion;
-
-  // PFI applies a multiplier to the total
-  const totalConversion = hasPfi
-    ? baseTotal * selectedVertical.pfiLift
-    : baseTotal;
 
   // Total impressions (SMS + email touches)
-  const emailImpressions = hasEmail ? pricingState.emailQty * 7500 * 12 : 0;
+  const emailImpressions = hasEmail
+    ? pricingState.emailQty * 7500 * 12
+    : 0;
   const totalImpressions = estSmsSends + emailImpressions;
 
-  // Leads & revenue
-  const leads = Math.round(estSmsSends * totalConversion);
-  const customers = Math.round(leads * (winRate / 100));
-  const estRevenue = customers * avgSalePrice;
+  // ── Base scenario (no PFI) ──
+  const baseConversion =
+    selectedVertical.smsBase / 100 +
+    (hasEmail ? selectedVertical.email / 100 : 0) +
+    (hasDfy ? selectedVertical.dfy / 100 : 0);
+  const baseLeads = Math.round(estSmsSends * baseConversion);
+  const baseCustomers = Math.round(baseLeads * (winRate / 100));
+  const baseRevenue = baseCustomers * avgSalePrice;
+  const baseInvestment = baseBreakdown.annualPrice;
+  const baseRoi = baseInvestment > 0 ? baseRevenue / baseInvestment : 0;
+  const baseCpl = baseLeads > 0 ? baseInvestment / baseLeads : 0;
+  const baseCpc = baseCustomers > 0 ? baseInvestment / baseCustomers : 0;
 
-  // Investment
-  const totalInvestment = breakdown.annualPrice;
-  const roiMultiple = totalInvestment > 0 ? estRevenue / totalInvestment : 0;
-  const costPerLead = leads > 0 ? totalInvestment / leads : 0;
-  const costPerCustomer = customers > 0 ? totalInvestment / customers : 0;
+  // ── PFI scenario ──
+  const pfiConversion = baseConversion * selectedVertical.pfiLift;
+  const pfiLeads = Math.round(estSmsSends * pfiConversion);
+  const pfiCustomers = Math.round(pfiLeads * (winRate / 100));
+  const pfiRevenue = pfiCustomers * avgSalePrice;
+  const pfiInvestment = pfiBreakdown.annualPrice;
+  const pfiRoi = pfiInvestment > 0 ? pfiRevenue / pfiInvestment : 0;
+  const pfiCpl = pfiLeads > 0 ? pfiInvestment / pfiLeads : 0;
+  const pfiCpc = pfiCustomers > 0 ? pfiInvestment / pfiCustomers : 0;
 
-  // Chart bar widths
-  const maxVal = Math.max(totalInvestment, estRevenue, 1);
+  // Deltas
+  const deltaLeads = pfiLeads - baseLeads;
+  const deltaRevenue = pfiRevenue - baseRevenue;
+
+  // Chart scale
+  const chartMax = Math.max(baseInvestment, baseRevenue, pfiInvestment, pfiRevenue, 1);
 
   return (
     <>
@@ -331,16 +376,11 @@ function RoiEstimateTab({
               ))}
             </select>
             <p className="text-xs text-gray-400 mt-1">
-              Conversion: {(totalConversion * 100).toFixed(2)}% (
-              {[
-                'SMS',
-                hasEmail && 'Email',
-                hasDfy && 'DFY',
-                hasPfi && 'PFI',
-              ]
+              Base: {(baseConversion * 100).toFixed(2)}% (
+              {['SMS', hasEmail && 'Email', hasDfy && 'DFY']
                 .filter(Boolean)
                 .join(' + ')}
-              )
+              ) &middot; w/ PFI: {(pfiConversion * 100).toFixed(2)}%
             </p>
           </div>
           <div>
@@ -390,7 +430,11 @@ function RoiEstimateTab({
 
       {/* SMS Estimate */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <AccordionPrimitive.Root type="single" collapsible defaultValue="sms-estimate">
+        <AccordionPrimitive.Root
+          type="single"
+          collapsible
+          defaultValue="sms-estimate"
+        >
           <AccordionPrimitive.Item value="sms-estimate" className="border-none">
             <AccordionPrimitive.Header className="flex">
               <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between font-medium transition-all [&[data-state=open]>svg]:rotate-180">
@@ -412,7 +456,8 @@ function RoiEstimateTab({
                 {hasEmail && (
                   <p>
                     + {formatNumber(emailImpressions)} email impressions/yr (
-                    {pricingState.emailQty} bundle{pricingState.emailQty > 1 ? 's' : ''} × 7,500/mo)
+                    {pricingState.emailQty} bundle
+                    {pricingState.emailQty > 1 ? 's' : ''} × 7,500/mo)
                   </p>
                 )}
               </div>
@@ -442,13 +487,14 @@ function RoiEstimateTab({
                 <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-2 px-4">
                   DFY
                 </th>
-                {hasPfi && (
-                  <th className="text-right text-xs font-semibold text-cyan-500 uppercase tracking-wider pb-2 px-4">
-                    PFI Lift
-                  </th>
-                )}
-                <th className="text-right text-xs font-bold text-gray-700 uppercase tracking-wider pb-2 pl-4">
+                <th className="text-right text-xs font-bold text-gray-700 uppercase tracking-wider pb-2 px-4">
                   Total
+                </th>
+                <th className="text-right text-xs font-semibold text-cyan-500 uppercase tracking-wider pb-2 px-4">
+                  PFI Lift
+                </th>
+                <th className="text-right text-xs font-bold text-cyan-600 uppercase tracking-wider pb-2 pl-4">
+                  Total w/ PFI
                 </th>
               </tr>
             </thead>
@@ -459,7 +505,7 @@ function RoiEstimateTab({
                   v.smsBase / 100 +
                   (hasEmail ? v.email / 100 : 0) +
                   (hasDfy ? v.dfy / 100 : 0);
-                const vTotal = hasPfi ? vBase * v.pfiLift : vBase;
+                const vPfi = vBase * v.pfiLift;
                 return (
                   <tr
                     key={v.name}
@@ -472,7 +518,9 @@ function RoiEstimateTab({
                     <td
                       className={cn(
                         'py-2 pr-4',
-                        isSelected ? 'font-bold text-slate-900' : 'text-gray-700'
+                        isSelected
+                          ? 'font-bold text-slate-900'
+                          : 'text-gray-700'
                       )}
                     >
                       {v.name}
@@ -480,7 +528,9 @@ function RoiEstimateTab({
                     <td
                       className={cn(
                         'text-right py-2 px-4',
-                        isSelected ? 'font-bold text-slate-900' : 'text-gray-500'
+                        isSelected
+                          ? 'font-bold text-slate-900'
+                          : 'text-gray-500'
                       )}
                     >
                       {v.smsBase.toFixed(2)}%
@@ -488,7 +538,9 @@ function RoiEstimateTab({
                     <td
                       className={cn(
                         'text-right py-2 px-4',
-                        isSelected ? 'font-bold text-slate-900' : 'text-gray-500'
+                        isSelected
+                          ? 'font-bold text-slate-900'
+                          : 'text-gray-500'
                       )}
                     >
                       {v.email.toFixed(2)}%
@@ -496,30 +548,38 @@ function RoiEstimateTab({
                     <td
                       className={cn(
                         'text-right py-2 px-4',
-                        isSelected ? 'font-bold text-slate-900' : 'text-gray-500'
+                        isSelected
+                          ? 'font-bold text-slate-900'
+                          : 'text-gray-500'
                       )}
                     >
                       {v.dfy.toFixed(2)}%
                     </td>
-                    {hasPfi && (
-                      <td
-                        className={cn(
-                          'text-right py-2 px-4',
-                          isSelected
-                            ? 'font-bold text-cyan-600'
-                            : 'text-cyan-500'
-                        )}
-                      >
-                        {v.pfiLift.toFixed(1)}×
-                      </td>
-                    )}
                     <td
                       className={cn(
-                        'text-right py-2 pl-4 font-bold',
+                        'text-right py-2 px-4 font-bold',
                         isSelected ? 'text-blue-700' : 'text-blue-600'
                       )}
                     >
-                      {(vTotal * 100).toFixed(2)}%
+                      {(vBase * 100).toFixed(2)}%
+                    </td>
+                    <td
+                      className={cn(
+                        'text-right py-2 px-4',
+                        isSelected
+                          ? 'font-bold text-cyan-600'
+                          : 'text-cyan-500'
+                      )}
+                    >
+                      {v.pfiLift.toFixed(1)}×
+                    </td>
+                    <td
+                      className={cn(
+                        'text-right py-2 pl-4 font-bold',
+                        isSelected ? 'text-cyan-700' : 'text-cyan-600'
+                      )}
+                    >
+                      {(vPfi * 100).toFixed(2)}%
                     </td>
                   </tr>
                 );
@@ -529,120 +589,241 @@ function RoiEstimateTab({
         </div>
       </div>
 
-      {/* ROI Estimate Results */}
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white">
-        <h3 className="text-xs font-bold tracking-wider uppercase mb-5 text-emerald-400">
-          ROI Estimate
-        </h3>
-
-        {/* Top metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-6">
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Est. SMS Sends
-            </p>
-            <p className="text-3xl font-bold">{formatNumber(estSmsSends)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Total Impressions
-            </p>
-            <p className="text-3xl font-bold">
-              {formatNumber(totalImpressions)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Leads
-            </p>
-            <p className="text-3xl font-bold text-emerald-400">
-              {formatNumber(leads)}
-            </p>
-          </div>
-        </div>
-
-        {/* Bottom metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-6">
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Total Investment
-            </p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(totalInvestment)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Est. Revenue
-            </p>
-            <p className="text-2xl font-bold text-emerald-300">
-              {formatCurrency(estRevenue)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              ROI Multiple
-            </p>
-            <p className="text-2xl font-bold text-yellow-400">
-              {roiMultiple.toFixed(1)}X
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Cost Per Lead
-            </p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(costPerLead, 2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              Cost Per Customer
-            </p>
-            <p className="text-2xl font-bold text-amber-300">
-              {formatCurrency(costPerCustomer, 2)}
-            </p>
-          </div>
-        </div>
-
-        {/* Investment vs Revenue bar chart */}
-        <div className="mt-4">
-          <p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold mb-3">
-            Investment vs Estimated Revenue
+      {/* Shared top-level metrics */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+            Est. SMS Sends
           </p>
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-400">Investment</span>
-                <span className="text-xs font-semibold">
-                  {formatCurrency(totalInvestment)}
-                </span>
+          <p className="text-2xl font-bold text-slate-900">
+            {formatNumber(estSmsSends)}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+            Total Impressions
+          </p>
+          <p className="text-2xl font-bold text-slate-900">
+            {formatNumber(totalImpressions)}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+            Win Rate
+          </p>
+          <p className="text-2xl font-bold text-slate-900">{winRate}%</p>
+        </div>
+      </div>
+
+      {/* ── Side-by-side ROI comparison ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Left: Base ROI */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white">
+          <h3 className="text-xs font-bold tracking-wider uppercase mb-5 text-gray-400">
+            Base ROI
+          </h3>
+          <div className="space-y-4">
+            <RoiMetric label="Leads" value={formatNumber(baseLeads)} color="text-white" />
+            <div className="grid grid-cols-2 gap-4">
+              <RoiMetric
+                label="Total Investment"
+                value={formatCurrency(baseInvestment)}
+                size="sm"
+              />
+              <RoiMetric
+                label="Est. Revenue"
+                value={formatCurrency(baseRevenue)}
+                color="text-emerald-300"
+                size="sm"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <RoiMetric
+                label="ROI Multiple"
+                value={`${baseRoi.toFixed(1)}X`}
+                color="text-yellow-400"
+                size="sm"
+              />
+              <RoiMetric
+                label="Cost / Lead"
+                value={formatCurrency(baseCpl, 2)}
+                size="sm"
+              />
+              <RoiMetric
+                label="Cost / Customer"
+                value={formatCurrency(baseCpc, 2)}
+                color="text-amber-300"
+                size="sm"
+              />
+            </div>
+
+            {/* Bar chart */}
+            <div className="pt-2 space-y-2">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-400">Investment</span>
+                  <span className="text-xs font-semibold">
+                    {formatCurrency(baseInvestment)}
+                  </span>
+                </div>
+                <div className="h-5 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-slate-500 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.max(2, (baseInvestment / chartMax) * 100)}%`,
+                    }}
+                  />
+                </div>
               </div>
-              <div className="h-6 bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-slate-500 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.max(2, (totalInvestment / maxVal) * 100)}%`,
-                  }}
-                />
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-400">Revenue</span>
+                  <span className="text-xs font-semibold text-emerald-400">
+                    {formatCurrency(baseRevenue)}
+                  </span>
+                </div>
+                <div className="h-5 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.max(2, (baseRevenue / chartMax) * 100)}%`,
+                    }}
+                  />
+                </div>
               </div>
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-400">Est. Revenue</span>
-                <span className="text-xs font-semibold text-emerald-400">
-                  {formatCurrency(estRevenue)}
+          </div>
+        </div>
+
+        {/* Right: With PropertyFi Intelligence */}
+        <div className="bg-gradient-to-br from-cyan-900 to-slate-900 rounded-2xl p-6 text-white ring-2 ring-cyan-400/50">
+          <div className="flex items-center gap-2 mb-5">
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-xs font-bold tracking-wider uppercase text-cyan-400">
+              With PropertyFi Intelligence
+            </h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-baseline gap-3">
+              <RoiMetric
+                label="Leads"
+                value={formatNumber(pfiLeads)}
+                color="text-cyan-300"
+              />
+              {deltaLeads > 0 && (
+                <span className="text-sm font-bold text-emerald-400">
+                  +{formatNumber(deltaLeads)}
                 </span>
-              </div>
-              <div className="h-6 bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.max(2, (estRevenue / maxVal) * 100)}%`,
-                  }}
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <RoiMetric
+                label="Total Investment"
+                value={formatCurrency(pfiInvestment)}
+                size="sm"
+              />
+              <div>
+                <RoiMetric
+                  label="Est. Revenue"
+                  value={formatCurrency(pfiRevenue)}
+                  color="text-emerald-300"
+                  size="sm"
                 />
+                {deltaRevenue > 0 && (
+                  <p className="text-xs font-semibold text-emerald-400 mt-0.5">
+                    +{formatCurrency(deltaRevenue)}
+                  </p>
+                )}
               </div>
             </div>
+            <div className="grid grid-cols-3 gap-4">
+              <RoiMetric
+                label="ROI Multiple"
+                value={`${pfiRoi.toFixed(1)}X`}
+                color="text-yellow-400"
+                size="sm"
+              />
+              <RoiMetric
+                label="Cost / Lead"
+                value={formatCurrency(pfiCpl, 2)}
+                size="sm"
+              />
+              <RoiMetric
+                label="Cost / Customer"
+                value={formatCurrency(pfiCpc, 2)}
+                color="text-amber-300"
+                size="sm"
+              />
+            </div>
+
+            {/* Bar chart */}
+            <div className="pt-2 space-y-2">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-400">Investment</span>
+                  <span className="text-xs font-semibold">
+                    {formatCurrency(pfiInvestment)}
+                  </span>
+                </div>
+                <div className="h-5 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-cyan-600 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.max(2, (pfiInvestment / chartMax) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-400">Revenue</span>
+                  <span className="text-xs font-semibold text-emerald-400">
+                    {formatCurrency(pfiRevenue)}
+                  </span>
+                </div>
+                <div className="h-5 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.max(2, (pfiRevenue / chartMax) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Delta summary bar */}
+      <div className="bg-gradient-to-r from-cyan-50 to-emerald-50 border border-cyan-200 rounded-xl p-5">
+        <h3 className="text-xs font-bold tracking-wider uppercase text-cyan-700 mb-3">
+          PropertyFi Intelligence Advantage
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Conversion Lift</p>
+            <p className="text-lg font-bold text-cyan-700">
+              {selectedVertical.pfiLift.toFixed(1)}×
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Additional Leads</p>
+            <p className="text-lg font-bold text-emerald-600">
+              +{formatNumber(deltaLeads)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Additional Revenue</p>
+            <p className="text-lg font-bold text-emerald-600">
+              +{formatCurrency(deltaRevenue)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">ROI Change</p>
+            <p className="text-lg font-bold text-yellow-600">
+              {baseRoi.toFixed(1)}× &rarr; {pfiRoi.toFixed(1)}×
+            </p>
           </div>
         </div>
       </div>
@@ -1312,7 +1493,6 @@ export default function PricingPage() {
         <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 space-y-6">
           <RoiEstimateTab
             pricingState={state}
-            breakdown={breakdown}
             roiVertical={roiVertical}
             setRoiVertical={setRoiVertical}
             avgSalePrice={avgSalePrice}
