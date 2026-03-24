@@ -19,6 +19,7 @@ import {
   VERSION,
   VOLUME_TIERS,
   CREDIT_BASE_PRICE,
+  VERTICALS,
   type PricingState,
 } from '@/lib/pricing-config';
 import {
@@ -27,6 +28,7 @@ import {
   formatNumber,
   getPlatformAvgPerYear,
   getVolumeTier,
+  getPfiVolumeTier,
   getPfiVolumeTiers,
 } from '@/lib/pricing-utils';
 import { cn } from '@/lib/utils';
@@ -205,7 +207,7 @@ function PfiVolumeTable({
   basePrice: number;
 }) {
   const tiers = getPfiVolumeTiers(basePrice);
-  const activeTier = getVolumeTier(activeQty);
+  const activeTier = getPfiVolumeTier(activeQty);
   const left = tiers.filter((_, i) => i < 3);
   const right = tiers.filter((_, i) => i >= 3);
 
@@ -249,12 +251,416 @@ function PfiVolumeTable({
   );
 }
 
+/* ── ROI Estimate Tab Component ─────────────────────────────────────── */
+function RoiEstimateTab({
+  pricingState,
+  breakdown,
+  roiVertical,
+  setRoiVertical,
+  avgSalePrice,
+  setAvgSalePrice,
+  winRate,
+  setWinRate,
+}: {
+  pricingState: PricingState;
+  breakdown: ReturnType<typeof calculateBreakdown>;
+  roiVertical: string;
+  setRoiVertical: (v: string) => void;
+  avgSalePrice: number;
+  setAvgSalePrice: (v: number) => void;
+  winRate: number;
+  setWinRate: (v: number) => void;
+}) {
+  const selectedVertical = VERTICALS.find((v) => v.name === roiVertical) || VERTICALS[5];
+
+  // SMS sends = credits / 3 (1 SMS = 3 credits)
+  const estSmsSends = Math.floor(pricingState.creditQty / 3);
+
+  // Determine active channels
+  const hasEmail = pricingState.emailQty > 0;
+  const hasDfy = pricingState.dfyQty > 0;
+  const hasPfi = pricingState.propertyFiEnabled;
+
+  // Base conversion = SMS
+  const smsConversion = selectedVertical.smsBase / 100;
+  const emailConversion = hasEmail ? selectedVertical.email / 100 : 0;
+  const dfyConversion = hasDfy ? selectedVertical.dfy / 100 : 0;
+  const baseTotal = smsConversion + emailConversion + dfyConversion;
+
+  // PFI applies a multiplier to the total
+  const totalConversion = hasPfi
+    ? baseTotal * selectedVertical.pfiLift
+    : baseTotal;
+
+  // Total impressions (SMS + email touches)
+  const emailImpressions = hasEmail ? pricingState.emailQty * 7500 * 12 : 0;
+  const totalImpressions = estSmsSends + emailImpressions;
+
+  // Leads & revenue
+  const leads = Math.round(estSmsSends * totalConversion);
+  const customers = Math.round(leads * (winRate / 100));
+  const estRevenue = customers * avgSalePrice;
+
+  // Investment
+  const totalInvestment = breakdown.annualPrice;
+  const roiMultiple = totalInvestment > 0 ? estRevenue / totalInvestment : 0;
+  const costPerLead = leads > 0 ? totalInvestment / leads : 0;
+  const costPerCustomer = customers > 0 ? totalInvestment / customers : 0;
+
+  // Chart bar widths
+  const maxVal = Math.max(totalInvestment, estRevenue, 1);
+
+  return (
+    <>
+      {/* Controls row */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              Industry Vertical
+            </label>
+            <select
+              value={roiVertical}
+              onChange={(e) => setRoiVertical(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              {VERTICALS.map((v) => (
+                <option key={v.name} value={v.name}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-400 mt-1">
+              Conversion: {(totalConversion * 100).toFixed(2)}% (
+              {[
+                'SMS',
+                hasEmail && 'Email',
+                hasDfy && 'DFY',
+                hasPfi && 'PFI',
+              ]
+                .filter(Boolean)
+                .join(' + ')}
+              )
+            </p>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              Avg Sale Price
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                $
+              </span>
+              <input
+                type="number"
+                min={0}
+                step={500}
+                value={avgSalePrice}
+                onChange={(e) =>
+                  setAvgSalePrice(Math.max(0, parseInt(e.target.value) || 0))
+                }
+                className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              Win Rate on Leads
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={winRate}
+                onChange={(e) =>
+                  setWinRate(
+                    Math.min(100, Math.max(0, parseInt(e.target.value) || 0))
+                  )
+                }
+                className="w-full border border-gray-200 rounded-lg px-3 pr-8 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                %
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SMS Estimate */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <AccordionPrimitive.Root type="single" collapsible defaultValue="sms-estimate">
+          <AccordionPrimitive.Item value="sms-estimate" className="border-none">
+            <AccordionPrimitive.Header className="flex">
+              <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between font-medium transition-all [&[data-state=open]>svg]:rotate-180">
+                <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                  SMS Estimate
+                </span>
+                <span className="text-sm text-blue-600 underline mr-2">
+                  {formatNumber(estSmsSends)} estimated annual sends
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200" />
+              </AccordionPrimitive.Trigger>
+            </AccordionPrimitive.Header>
+            <AccordionPrimitive.Content className="overflow-hidden text-sm data-[state=closed]:animate-[accordion-up_0.2s_ease-out] data-[state=open]:animate-[accordion-down_0.2s_ease-out]">
+              <div className="pt-3 text-xs text-gray-500 space-y-1">
+                <p>
+                  Based on {formatNumber(pricingState.creditQty)} credits at 3
+                  credits per SMS send
+                </p>
+                {hasEmail && (
+                  <p>
+                    + {formatNumber(emailImpressions)} email impressions/yr (
+                    {pricingState.emailQty} bundle{pricingState.emailQty > 1 ? 's' : ''} × 7,500/mo)
+                  </p>
+                )}
+              </div>
+            </AccordionPrimitive.Content>
+          </AccordionPrimitive.Item>
+        </AccordionPrimitive.Root>
+      </div>
+
+      {/* Conversion Rates by Vertical */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <h3 className="text-xs font-semibold tracking-wider text-gray-500 uppercase mb-4">
+          Conversion Rates by Vertical
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-2 pr-4">
+                  Vertical
+                </th>
+                <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-2 px-4">
+                  SMS/Base
+                </th>
+                <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-2 px-4">
+                  Email
+                </th>
+                <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-2 px-4">
+                  DFY
+                </th>
+                {hasPfi && (
+                  <th className="text-right text-xs font-semibold text-cyan-500 uppercase tracking-wider pb-2 px-4">
+                    PFI Lift
+                  </th>
+                )}
+                <th className="text-right text-xs font-bold text-gray-700 uppercase tracking-wider pb-2 pl-4">
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {VERTICALS.map((v) => {
+                const isSelected = v.name === roiVertical;
+                const vBase =
+                  v.smsBase / 100 +
+                  (hasEmail ? v.email / 100 : 0) +
+                  (hasDfy ? v.dfy / 100 : 0);
+                const vTotal = hasPfi ? vBase * v.pfiLift : vBase;
+                return (
+                  <tr
+                    key={v.name}
+                    className={cn(
+                      'border-b border-gray-50 transition-colors cursor-pointer hover:bg-gray-50',
+                      isSelected && 'bg-gray-50'
+                    )}
+                    onClick={() => setRoiVertical(v.name)}
+                  >
+                    <td
+                      className={cn(
+                        'py-2 pr-4',
+                        isSelected ? 'font-bold text-slate-900' : 'text-gray-700'
+                      )}
+                    >
+                      {v.name}
+                    </td>
+                    <td
+                      className={cn(
+                        'text-right py-2 px-4',
+                        isSelected ? 'font-bold text-slate-900' : 'text-gray-500'
+                      )}
+                    >
+                      {v.smsBase.toFixed(2)}%
+                    </td>
+                    <td
+                      className={cn(
+                        'text-right py-2 px-4',
+                        isSelected ? 'font-bold text-slate-900' : 'text-gray-500'
+                      )}
+                    >
+                      {v.email.toFixed(2)}%
+                    </td>
+                    <td
+                      className={cn(
+                        'text-right py-2 px-4',
+                        isSelected ? 'font-bold text-slate-900' : 'text-gray-500'
+                      )}
+                    >
+                      {v.dfy.toFixed(2)}%
+                    </td>
+                    {hasPfi && (
+                      <td
+                        className={cn(
+                          'text-right py-2 px-4',
+                          isSelected
+                            ? 'font-bold text-cyan-600'
+                            : 'text-cyan-500'
+                        )}
+                      >
+                        {v.pfiLift.toFixed(1)}×
+                      </td>
+                    )}
+                    <td
+                      className={cn(
+                        'text-right py-2 pl-4 font-bold',
+                        isSelected ? 'text-blue-700' : 'text-blue-600'
+                      )}
+                    >
+                      {(vTotal * 100).toFixed(2)}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ROI Estimate Results */}
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white">
+        <h3 className="text-xs font-bold tracking-wider uppercase mb-5 text-emerald-400">
+          ROI Estimate
+        </h3>
+
+        {/* Top metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-6">
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              Est. SMS Sends
+            </p>
+            <p className="text-3xl font-bold">{formatNumber(estSmsSends)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              Total Impressions
+            </p>
+            <p className="text-3xl font-bold">
+              {formatNumber(totalImpressions)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              Leads
+            </p>
+            <p className="text-3xl font-bold text-emerald-400">
+              {formatNumber(leads)}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-6">
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              Total Investment
+            </p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(totalInvestment)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              Est. Revenue
+            </p>
+            <p className="text-2xl font-bold text-emerald-300">
+              {formatCurrency(estRevenue)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              ROI Multiple
+            </p>
+            <p className="text-2xl font-bold text-yellow-400">
+              {roiMultiple.toFixed(1)}X
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              Cost Per Lead
+            </p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(costPerLead, 2)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              Cost Per Customer
+            </p>
+            <p className="text-2xl font-bold text-amber-300">
+              {formatCurrency(costPerCustomer, 2)}
+            </p>
+          </div>
+        </div>
+
+        {/* Investment vs Revenue bar chart */}
+        <div className="mt-4">
+          <p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold mb-3">
+            Investment vs Estimated Revenue
+          </p>
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-400">Investment</span>
+                <span className="text-xs font-semibold">
+                  {formatCurrency(totalInvestment)}
+                </span>
+              </div>
+              <div className="h-6 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-slate-500 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.max(2, (totalInvestment / maxVal) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-400">Est. Revenue</span>
+                <span className="text-xs font-semibold text-emerald-400">
+                  {formatCurrency(estRevenue)}
+                </span>
+              </div>
+              <div className="h-6 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.max(2, (estRevenue / maxVal) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════════
    MAIN PAGE
    ════════════════════════════════════════════════════════════════════════ */
 export default function PricingPage() {
   const [state, setState] = useState<PricingState>(DEFAULT_STATE);
   const [activeTab, setActiveTab] = useState('pricing');
+
+  // ROI Estimate state
+  const [roiVertical, setRoiVertical] = useState('Roofing');
+  const [avgSalePrice, setAvgSalePrice] = useState(12000);
+  const [winRate, setWinRate] = useState(40);
 
   const update = (patch: Partial<PricingState>) =>
     setState((prev) => ({ ...prev, ...patch }));
@@ -263,7 +669,7 @@ export default function PricingPage() {
   const breakdown = useMemo(() => calculateBreakdown(state), [state]);
   const creditDiscount = breakdown.creditDiscountPercent;
   const pfiDiscount = breakdown.pfiDiscountPercent;
-  const pfiTier = getVolumeTier(state.pfiPropertyQty);
+  const pfiTier = getPfiVolumeTier(state.pfiPropertyQty);
 
   const tabs = ['Pricing', 'ROI Estimate', 'Marketing Spend', 'Summary', 'FAQs'];
   const today = format(new Date(), 'MMMM d, yyyy');
@@ -546,14 +952,7 @@ export default function PricingPage() {
             </div>
 
             {/* ─ Card 4: Done For You ─ */}
-            <div
-              className={cn(
-                'bg-white rounded-xl shadow-sm p-5 flex flex-col transition-all',
-                state.dfyQty > 0
-                  ? 'ring-2 ring-orange-400 border border-orange-200'
-                  : 'border border-gray-100'
-              )}
-            >
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col">
               <div className="flex items-center gap-2.5 mb-1">
                 <Badge letter="D" color="#f97316" />
                 <div>
@@ -590,7 +989,7 @@ export default function PricingPage() {
                 <QtyControl
                   value={state.dfyQty}
                   onChange={(v) => update({ dfyQty: v })}
-                  min={1}
+                  min={0}
                 />
               </div>
             </div>
@@ -622,12 +1021,7 @@ export default function PricingPage() {
 
                 <ul className="space-y-1.5 mb-4">
                   <Feature>
-                    {formatCurrency(
-                      state.pfiPricePerProperty *
-                        (pfiTier.price / CREDIT_BASE_PRICE),
-                      2
-                    )}{' '}
-                    per property
+                    {formatCurrency(pfiTier.price, 2)} per property
                   </Feature>
                   <Feature>Hyper-targeted intelligence</Feature>
                   <Feature>AI-powered property analysis</Feature>
@@ -913,8 +1307,24 @@ export default function PricingPage() {
         </main>
       )}
 
+      {/* ── ROI Estimate Tab ──────────────────────────────────────── */}
+      {activeTab === 'roi-estimate' && (
+        <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 space-y-6">
+          <RoiEstimateTab
+            pricingState={state}
+            breakdown={breakdown}
+            roiVertical={roiVertical}
+            setRoiVertical={setRoiVertical}
+            avgSalePrice={avgSalePrice}
+            setAvgSalePrice={setAvgSalePrice}
+            winRate={winRate}
+            setWinRate={setWinRate}
+          />
+        </main>
+      )}
+
       {/* Placeholder for other tabs */}
-      {activeTab !== 'pricing' && (
+      {activeTab !== 'pricing' && activeTab !== 'roi-estimate' && (
         <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-16 text-center">
           <p className="text-gray-400 text-lg">
             {tabs.find(

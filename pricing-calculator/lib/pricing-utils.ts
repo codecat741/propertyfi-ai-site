@@ -1,6 +1,8 @@
 import {
   VOLUME_TIERS,
+  PFI_VOLUME_TIERS,
   CREDIT_BASE_PRICE,
+  PFI_DEFAULT_PRICE,
   PLATFORM_FIRST_PRICE,
   PLATFORM_ADDITIONAL_PRICE,
   EMAIL_BUNDLE_PRICE_ANNUAL,
@@ -36,21 +38,33 @@ export function getVolumeDiscountPercent(qty: number): number {
   return ((CREDIT_BASE_PRICE - tier.price) / CREDIT_BASE_PRICE) * 100;
 }
 
-export function getPfiDiscountedPrice(qty: number, basePrice: number): number {
-  const tier = getVolumeTier(qty);
-  const ratio = tier.price / CREDIT_BASE_PRICE;
-  return basePrice * ratio;
+export function getPfiVolumeTier(qty: number) {
+  let tier = PFI_VOLUME_TIERS[0];
+  for (const t of PFI_VOLUME_TIERS) {
+    if (qty >= t.min) tier = t;
+  }
+  return tier;
+}
+
+export function getPfiDiscountedPrice(qty: number, _basePrice: number): number {
+  return getPfiVolumeTier(qty).price;
 }
 
 export function getPfiCost(qty: number, basePrice: number): number {
   return qty * getPfiDiscountedPrice(qty, basePrice);
 }
 
-export function getPfiVolumeTiers(basePrice: number) {
-  return VOLUME_TIERS.map((tier) => ({
+export function getPfiVolumeTiers(_basePrice: number) {
+  return PFI_VOLUME_TIERS.map((tier) => ({
     ...tier,
-    pfiPrice: basePrice * (tier.price / CREDIT_BASE_PRICE),
+    pfiPrice: tier.price,
   }));
+}
+
+export function getPfiVolumeDiscountPercent(qty: number): number {
+  const tier = getPfiVolumeTier(qty);
+  if (tier.price >= PFI_DEFAULT_PRICE) return 0;
+  return ((PFI_DEFAULT_PRICE - tier.price) / PFI_DEFAULT_PRICE) * 100;
 }
 
 export function getEmailCost(qty: number): number {
@@ -122,11 +136,11 @@ export function calculateBreakdown(state: PricingState): PricingBreakdown {
   const creditDiscountPercent = getVolumeDiscountPercent(state.creditQty);
 
   const pfiBaseTotal = state.propertyFiEnabled
-    ? state.pfiPropertyQty * state.pfiPricePerProperty
+    ? state.pfiPropertyQty * PFI_DEFAULT_PRICE
     : 0;
   const pfiDiscountAmount = pfiBaseTotal - pfiTotal;
   const pfiDiscountPercent = state.propertyFiEnabled
-    ? getVolumeDiscountPercent(state.pfiPropertyQty)
+    ? getPfiVolumeDiscountPercent(state.pfiPropertyQty)
     : 0;
 
   const upfrontPayment = platformAnnual + creditsTotal + dfyQuarterly + pfiTotal;
