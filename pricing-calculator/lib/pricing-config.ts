@@ -1,4 +1,4 @@
-export const VERSION = 'v15.3';
+export const VERSION = 'v15.4';
 
 export interface VolumeTier {
   min: number;
@@ -17,11 +17,11 @@ export const VOLUME_TIERS: VolumeTier[] = [
 
 export const PFI_VOLUME_TIERS: VolumeTier[] = [
   { min: 0, label: 'Base', price: 2.50 },
-  { min: 5000, label: '5k+', price: 2.00 },
-  { min: 10000, label: '10k+', price: 1.75 },
-  { min: 25000, label: '25k+', price: 1.50 },
-  { min: 50000, label: '50k+', price: 1.25 },
-  { min: 100000, label: '100k+', price: 1.00 },
+  { min: 1000, label: '1k+', price: 2.25 },
+  { min: 2500, label: '2.5k+', price: 2.00 },
+  { min: 5000, label: '5k+', price: 1.75 },
+  { min: 10000, label: '10k+', price: 1.50 },
+  { min: 25000, label: '25k+', price: 1.25 },
 ];
 
 export const CREDIT_BASE_PRICE = 0.06;
@@ -78,6 +78,6 @@ export const DEFAULT_STATE: PricingState = {
   dfyBilling: 'quarterly',
   discountPercent: 0,
   propertyFiEnabled: false,
-  pfiPropertyQty: 10000,
+  pfiPropertyQty: 1000,
   pfiPricePerProperty: PFI_DEFAULT_PRICE,
 };
