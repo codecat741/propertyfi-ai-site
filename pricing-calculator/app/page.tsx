@@ -1244,7 +1244,7 @@ export default function PricingPage() {
                   <input
                     type="number"
                     min={0}
-                    step={1000}
+                    step={100}
                     value={state.pfiPropertyQty}
                     onChange={(e) =>
                       update({
