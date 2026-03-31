@@ -338,9 +338,16 @@ function RoiEstimateTab({
   const baseCpl = baseLeads > 0 ? baseInvestment / baseLeads : 0;
   const baseCpc = baseCustomers > 0 ? baseInvestment / baseCustomers : 0;
 
-  // ── PFI scenario ──
-  const pfiConversion = baseConversion * selectedVertical.pfiLift;
-  const pfiLeads = Math.round(estSmsSends * pfiConversion);
+  // ── PFI scenario (split-send model) ──
+  // PFI lift only applies to sends targeting PFI properties;
+  // remaining sends convert at the base rate.
+  const pfiTargetedConversion = baseConversion * selectedVertical.pfiLift;
+  const pfiTargetedSends = Math.min(pricingState.pfiPropertyQty, estSmsSends);
+  const pfiUntargetedSends = estSmsSends - pfiTargetedSends;
+  const pfiTargetedLeads = Math.round(pfiTargetedSends * pfiTargetedConversion);
+  const pfiUntargetedLeads = Math.round(pfiUntargetedSends * baseConversion);
+  const pfiLeads = pfiTargetedLeads + pfiUntargetedLeads;
+  const pfiBlendedConversion = estSmsSends > 0 ? pfiLeads / estSmsSends : 0;
   const pfiCustomers = Math.round(pfiLeads * (winRate / 100));
   const pfiRevenue = pfiCustomers * avgSalePrice;
   const pfiInvestment = pfiBreakdown.annualPrice;
@@ -380,7 +387,10 @@ function RoiEstimateTab({
               {['SMS', hasEmail && 'Email', hasDfy && 'DFY']
                 .filter(Boolean)
                 .join(' + ')}
-              ) &middot; w/ PFI: {(pfiConversion * 100).toFixed(2)}%
+              ) &middot; PFI targeted: {(pfiTargetedConversion * 100).toFixed(2)}%
+              {pfiTargetedSends < estSmsSends && (
+                <> &middot; Blended: {(pfiBlendedConversion * 100).toFixed(2)}%</>
+              )}
             </p>
           </div>
           <div>
@@ -494,7 +504,7 @@ function RoiEstimateTab({
                   PFI Lift
                 </th>
                 <th className="text-right text-xs font-bold text-cyan-600 uppercase tracking-wider pb-2 pl-4">
-                  Total w/ PFI
+                  PFI Targeted
                 </th>
               </tr>
             </thead>
@@ -704,9 +714,31 @@ function RoiEstimateTab({
             </h3>
           </div>
           <div className="space-y-4">
+            {/* Send split breakdown */}
+            <div className="bg-white/5 rounded-lg p-3 space-y-1.5">
+              <div className="flex justify-between text-xs">
+                <span className="text-cyan-300">PFI Targeted Sends</span>
+                <span className="font-bold text-cyan-300">
+                  {formatNumber(pfiTargetedSends)} @ {(pfiTargetedConversion * 100).toFixed(2)}% &rarr; {formatNumber(pfiTargetedLeads)} leads
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400">Untargeted Sends</span>
+                <span className="font-medium text-gray-400">
+                  {formatNumber(pfiUntargetedSends)} @ {(baseConversion * 100).toFixed(2)}% &rarr; {formatNumber(pfiUntargetedLeads)} leads
+                </span>
+              </div>
+              <div className="border-t border-white/10 pt-1 flex justify-between text-xs">
+                <span className="text-white font-semibold">Blended</span>
+                <span className="font-bold text-white">
+                  {formatNumber(estSmsSends)} sends &rarr; {formatNumber(pfiLeads)} leads ({(pfiBlendedConversion * 100).toFixed(2)}%)
+                </span>
+              </div>
+            </div>
+
             <div className="flex items-baseline gap-3">
               <RoiMetric
-                label="Leads"
+                label="Total Leads"
                 value={formatNumber(pfiLeads)}
                 color="text-cyan-300"
               />
@@ -802,9 +834,9 @@ function RoiEstimateTab({
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Conversion Lift</p>
+            <p className="text-xs text-gray-500 mb-0.5">PFI Targeted Sends</p>
             <p className="text-lg font-bold text-cyan-700">
-              {selectedVertical.pfiLift.toFixed(1)}×
+              {formatNumber(pfiTargetedSends)} ({selectedVertical.pfiLift.toFixed(1)}× lift)
             </p>
           </div>
           <div>
