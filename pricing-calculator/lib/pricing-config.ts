@@ -1,4 +1,4 @@
-export const VERSION = 'v15.4';
+export const VERSION = 'v16.0';
 
 export interface VolumeTier {
   min: number;
@@ -16,16 +16,16 @@ export const VOLUME_TIERS: VolumeTier[] = [
 ];
 
 export const PFI_VOLUME_TIERS: VolumeTier[] = [
-  { min: 0, label: 'Base', price: 2.50 },
-  { min: 1000, label: '1k+', price: 2.25 },
-  { min: 2500, label: '2.5k+', price: 2.00 },
-  { min: 5000, label: '5k+', price: 1.75 },
-  { min: 10000, label: '10k+', price: 1.50 },
-  { min: 25000, label: '25k+', price: 1.25 },
+  { min: 0, label: 'Base', price: 0.25 },
+  { min: 1000, label: '1k+', price: 0.22 },
+  { min: 2500, label: '2.5k+', price: 0.20 },
+  { min: 5000, label: '5k+', price: 0.18 },
+  { min: 10000, label: '10k+', price: 0.16 },
+  { min: 25000, label: '25k+', price: 0.15 },
 ];
 
 export const CREDIT_BASE_PRICE = 0.06;
-export const PFI_DEFAULT_PRICE = 2.5;
+export const PFI_DEFAULT_PRICE = 0.25;
 
 export const PLATFORM_FIRST_PRICE = 3300;
 export const PLATFORM_ADDITIONAL_PRICE = 1500;
@@ -54,17 +54,17 @@ export interface VerticalConversion {
   smsBase: number;   // SMS/Base conversion %
   email: number;     // Email conversion %
   dfy: number;       // DFY conversion %
-  pfiLift: number;   // PFI multiplier on total (2-3x)
+  pfiLift: number;   // PFI multiplier on targeted sends (3x baseline)
 }
 
 export const VERTICALS: VerticalConversion[] = [
-  { name: 'Exterior Clean', smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 2.5 },
-  { name: 'Home Cleaning',  smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 2.5 },
-  { name: 'Standard',       smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 2.5 },
-  { name: 'Pest & Lawn',    smsBase: 0.60, email: 0.10, dfy: 0.10, pfiLift: 2.0 },
-  { name: 'Painting',       smsBase: 0.35, email: 0.10, dfy: 0.10, pfiLift: 2.5 },
+  { name: 'Exterior Clean', smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
+  { name: 'Home Cleaning',  smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
+  { name: 'Standard',       smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
+  { name: 'Pest & Lawn',    smsBase: 0.60, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
+  { name: 'Painting',       smsBase: 0.35, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
   { name: 'Roofing',        smsBase: 0.30, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Garage',         smsBase: 0.25, email: 0.10, dfy: 0.10, pfiLift: 2.5 },
+  { name: 'Garage',         smsBase: 0.25, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
   { name: 'Mechanical',     smsBase: 0.20, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
 ];
 

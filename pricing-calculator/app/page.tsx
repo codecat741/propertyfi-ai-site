@@ -1253,7 +1253,7 @@ export default function PricingPage() {
                     <input
                       type="number"
                       min={0}
-                      step={0.1}
+                      step={0.01}
                       value={state.pfiPricePerProperty}
                       onChange={(e) =>
                         update({
