@@ -1,6 +1,7 @@
 import {
   VOLUME_TIERS,
   PFI_VOLUME_TIERS,
+  PFI_CHANNELS,
   CREDIT_BASE_PRICE,
   PFI_DEFAULT_PRICE,
   PLATFORM_FIRST_PRICE,
@@ -8,6 +9,8 @@ import {
   EMAIL_BUNDLE_PRICE_ANNUAL,
   DFY_PRICE_QUARTERLY,
   type PricingState,
+  type PfiChannel,
+  type VolumeTier,
 } from './pricing-config';
 
 export function getPlatformCost(qty: number): number {
@@ -38,33 +41,36 @@ export function getVolumeDiscountPercent(qty: number): number {
   return ((CREDIT_BASE_PRICE - tier.price) / CREDIT_BASE_PRICE) * 100;
 }
 
-export function getPfiVolumeTier(qty: number) {
-  let tier = PFI_VOLUME_TIERS[0];
-  for (const t of PFI_VOLUME_TIERS) {
+export function getPfiVolumeTier(qty: number, tiers?: VolumeTier[]) {
+  const useTiers = tiers || PFI_VOLUME_TIERS;
+  let tier = useTiers[0];
+  for (const t of useTiers) {
     if (qty >= t.min) tier = t;
   }
   return tier;
 }
 
-export function getPfiDiscountedPrice(qty: number, _basePrice: number): number {
-  return getPfiVolumeTier(qty).price;
+export function getPfiDiscountedPrice(qty: number, _basePrice: number, tiers?: VolumeTier[]): number {
+  return getPfiVolumeTier(qty, tiers).price;
 }
 
-export function getPfiCost(qty: number, basePrice: number): number {
-  return qty * getPfiDiscountedPrice(qty, basePrice);
+export function getPfiCost(qty: number, basePrice: number, tiers?: VolumeTier[]): number {
+  return qty * getPfiDiscountedPrice(qty, basePrice, tiers);
 }
 
-export function getPfiVolumeTiers(_basePrice: number) {
-  return PFI_VOLUME_TIERS.map((tier) => ({
+export function getPfiVolumeTiers(_basePrice: number, tiers?: VolumeTier[]) {
+  const useTiers = tiers || PFI_VOLUME_TIERS;
+  return useTiers.map((tier) => ({
     ...tier,
     pfiPrice: tier.price,
   }));
 }
 
-export function getPfiVolumeDiscountPercent(qty: number): number {
-  const tier = getPfiVolumeTier(qty);
-  if (tier.price >= PFI_DEFAULT_PRICE) return 0;
-  return ((PFI_DEFAULT_PRICE - tier.price) / PFI_DEFAULT_PRICE) * 100;
+export function getPfiVolumeDiscountPercent(qty: number, channel?: PfiChannel): number {
+  const channelConfig = PFI_CHANNELS[channel || 'sms'];
+  const tier = getPfiVolumeTier(qty, channelConfig.tiers);
+  if (tier.price >= channelConfig.basePrice) return 0;
+  return ((channelConfig.basePrice - tier.price) / channelConfig.basePrice) * 100;
 }
 
 export function getEmailCost(qty: number): number {
@@ -124,11 +130,14 @@ export function calculateBreakdown(state: PricingState): PricingBreakdown {
   const emailAnnual = getEmailCost(state.emailQty);
   const dfyQuarterly = getDfyCost(state.dfyQty);
 
+  const channelTiers = PFI_CHANNELS[state.pfiChannel || 'sms'].tiers;
+  const channelBasePrice = PFI_CHANNELS[state.pfiChannel || 'sms'].basePrice;
+
   const pfiPricePerProperty = state.propertyFiEnabled
-    ? getPfiDiscountedPrice(state.pfiPropertyQty, state.pfiPricePerProperty)
+    ? getPfiDiscountedPrice(state.pfiPropertyQty, state.pfiPricePerProperty, channelTiers)
     : 0;
   const pfiTotal = state.propertyFiEnabled
-    ? getPfiCost(state.pfiPropertyQty, state.pfiPricePerProperty)
+    ? getPfiCost(state.pfiPropertyQty, state.pfiPricePerProperty, channelTiers)
     : 0;
 
   const creditBaseTotal = state.creditQty * CREDIT_BASE_PRICE;
@@ -136,11 +145,11 @@ export function calculateBreakdown(state: PricingState): PricingBreakdown {
   const creditDiscountPercent = getVolumeDiscountPercent(state.creditQty);
 
   const pfiBaseTotal = state.propertyFiEnabled
-    ? state.pfiPropertyQty * PFI_DEFAULT_PRICE
+    ? state.pfiPropertyQty * channelBasePrice
     : 0;
   const pfiDiscountAmount = pfiBaseTotal - pfiTotal;
   const pfiDiscountPercent = state.propertyFiEnabled
-    ? getPfiVolumeDiscountPercent(state.pfiPropertyQty)
+    ? getPfiVolumeDiscountPercent(state.pfiPropertyQty, state.pfiChannel)
     : 0;
 
   const upfrontPayment = platformAnnual + creditsTotal + dfyQuarterly + pfiTotal;

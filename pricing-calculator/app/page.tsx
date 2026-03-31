@@ -20,7 +20,9 @@ import {
   VOLUME_TIERS,
   CREDIT_BASE_PRICE,
   VERTICALS,
+  PFI_CHANNELS,
   type PricingState,
+  type PfiChannel,
 } from '@/lib/pricing-config';
 import {
   calculateBreakdown,
@@ -202,12 +204,15 @@ function VolumeTable({ activeQty }: { activeQty: number }) {
 function PfiVolumeTable({
   activeQty,
   basePrice,
+  channel = 'sms',
 }: {
   activeQty: number;
   basePrice: number;
+  channel?: PfiChannel;
 }) {
-  const tiers = getPfiVolumeTiers(basePrice);
-  const activeTier = getPfiVolumeTier(activeQty);
+  const channelTiers = PFI_CHANNELS[channel].tiers;
+  const tiers = getPfiVolumeTiers(basePrice, channelTiers);
+  const activeTier = getPfiVolumeTier(activeQty, channelTiers);
   const left = tiers.filter((_, i) => i < 3);
   const right = tiers.filter((_, i) => i >= 3);
 
@@ -312,6 +317,11 @@ function RoiEstimateTab({
     [pricingState]
   );
 
+  // Channel config
+  const pfiChannel = pricingState.pfiChannel || 'sms';
+  const channelConfig = PFI_CHANNELS[pfiChannel];
+  const isSmsChannel = pfiChannel === 'sms';
+
   // SMS sends = credits / 3 (1 SMS = 3 credits)
   const estSmsSends = Math.floor(pricingState.creditQty / 3);
 
@@ -325,15 +335,29 @@ function RoiEstimateTab({
     : 0;
   const totalImpressions = estSmsSends + emailImpressions;
 
-  // ── Base scenario (no PFI) ──
+  // Total contacts depends on channel:
+  // SMS: determined by credits. Mail/D2D: determined by PFI property qty.
+  const totalContacts = isSmsChannel
+    ? estSmsSends
+    : pricingState.pfiPropertyQty;
+
+  // ── Base conversion rate ──
   const baseConversion =
     selectedVertical.smsBase / 100 +
     (hasEmail ? selectedVertical.email / 100 : 0) +
     (hasDfy ? selectedVertical.dfy / 100 : 0);
-  const baseLeads = Math.round(estSmsSends * baseConversion);
+
+  // ── Base scenario (no PFI / untargeted) ──
+  const baseLeads = Math.round(totalContacts * baseConversion);
   const baseCustomers = Math.round(baseLeads * (winRate / 100));
   const baseRevenue = baseCustomers * avgSalePrice;
-  const baseInvestment = baseBreakdown.annualPrice;
+  // For SMS: platform + credits. For Mail/D2D: delivery cost only (no platform).
+  const baseDeliveryCost = isSmsChannel
+    ? 0 // delivery cost is baked into credits
+    : totalContacts * channelConfig.deliveryCost;
+  const baseInvestment = isSmsChannel
+    ? baseBreakdown.annualPrice
+    : baseDeliveryCost;
   const baseRoi = baseInvestment > 0 ? baseRevenue / baseInvestment : 0;
   const baseCpl = baseLeads > 0 ? baseInvestment / baseLeads : 0;
   const baseCpc = baseCustomers > 0 ? baseInvestment / baseCustomers : 0;
@@ -342,15 +366,22 @@ function RoiEstimateTab({
   // PFI lift only applies to sends targeting PFI properties;
   // remaining sends convert at the base rate.
   const pfiTargetedConversion = baseConversion * selectedVertical.pfiLift;
-  const pfiTargetedSends = Math.min(pricingState.pfiPropertyQty, estSmsSends);
-  const pfiUntargetedSends = estSmsSends - pfiTargetedSends;
+  // For SMS: targeted sends capped by PFI qty. For Mail/D2D: all sends targeted.
+  const pfiTargetedSends = isSmsChannel
+    ? Math.min(pricingState.pfiPropertyQty, estSmsSends)
+    : totalContacts;
+  const pfiUntargetedSends = totalContacts - pfiTargetedSends;
   const pfiTargetedLeads = Math.round(pfiTargetedSends * pfiTargetedConversion);
   const pfiUntargetedLeads = Math.round(pfiUntargetedSends * baseConversion);
   const pfiLeads = pfiTargetedLeads + pfiUntargetedLeads;
-  const pfiBlendedConversion = estSmsSends > 0 ? pfiLeads / estSmsSends : 0;
+  const pfiBlendedConversion = totalContacts > 0 ? pfiLeads / totalContacts : 0;
   const pfiCustomers = Math.round(pfiLeads * (winRate / 100));
   const pfiRevenue = pfiCustomers * avgSalePrice;
-  const pfiInvestment = pfiBreakdown.annualPrice;
+  // For SMS: platform + credits + PFI data. For Mail/D2D: delivery + PFI data.
+  const pfiDataCost = pfiBreakdown.pfiTotal;
+  const pfiInvestment = isSmsChannel
+    ? pfiBreakdown.annualPrice
+    : baseDeliveryCost + pfiDataCost;
   const pfiRoi = pfiInvestment > 0 ? pfiRevenue / pfiInvestment : 0;
   const pfiCpl = pfiLeads > 0 ? pfiInvestment / pfiLeads : 0;
   const pfiCpc = pfiCustomers > 0 ? pfiInvestment / pfiCustomers : 0;
@@ -383,13 +414,12 @@ function RoiEstimateTab({
               ))}
             </select>
             <p className="text-xs text-gray-400 mt-1">
-              Base: {(baseConversion * 100).toFixed(2)}% (
-              {['SMS', hasEmail && 'Email', hasDfy && 'DFY']
-                .filter(Boolean)
-                .join(' + ')}
-              ) &middot; PFI targeted: {(pfiTargetedConversion * 100).toFixed(2)}%
-              {pfiTargetedSends < estSmsSends && (
+              Base: {(baseConversion * 100).toFixed(2)}% &middot; PFI targeted: {(pfiTargetedConversion * 100).toFixed(2)}%
+              {pfiUntargetedSends > 0 && (
                 <> &middot; Blended: {(pfiBlendedConversion * 100).toFixed(2)}%</>
+              )}
+              {!isSmsChannel && (
+                <> &middot; Channel: {channelConfig.label}</>
               )}
             </p>
           </div>
@@ -600,21 +630,29 @@ function RoiEstimateTab({
       </div>
 
       {/* Shared top-level metrics */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-            Est. SMS Sends
+            {isSmsChannel ? 'Est. SMS Sends' : `${channelConfig.label} Contacts`}
           </p>
           <p className="text-2xl font-bold text-slate-900">
-            {formatNumber(estSmsSends)}
+            {formatNumber(totalContacts)}
           </p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-            Total Impressions
+            Delivery Cost
           </p>
           <p className="text-2xl font-bold text-slate-900">
-            {formatNumber(totalImpressions)}
+            {formatCurrency(channelConfig.deliveryCost, 2)}/ea
+          </p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+            Data + Delivery
+          </p>
+          <p className="text-2xl font-bold text-cyan-700">
+            {formatCurrency(pfiBreakdown.pfiPricePerProperty + channelConfig.deliveryCost, 2)}/ea
           </p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
@@ -630,7 +668,7 @@ function RoiEstimateTab({
         {/* Left: Base ROI */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white">
           <h3 className="text-xs font-bold tracking-wider uppercase mb-5 text-gray-400">
-            Base ROI
+            {isSmsChannel ? 'Base ROI' : `Untargeted ${channelConfig.label}`}
           </h3>
           <div className="space-y-4">
             <RoiMetric label="Leads" value={formatNumber(baseLeads)} color="text-white" />
@@ -832,11 +870,17 @@ function RoiEstimateTab({
         <h3 className="text-xs font-bold tracking-wider uppercase text-cyan-700 mb-3">
           PropertyFi Intelligence Advantage
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">PFI Targeted Sends</p>
+            <p className="text-xs text-gray-500 mb-0.5">Cost/Lead (Untargeted)</p>
+            <p className="text-lg font-bold text-gray-600">
+              {formatCurrency(baseCpl, 2)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Cost/Lead (PFI)</p>
             <p className="text-lg font-bold text-cyan-700">
-              {formatNumber(pfiTargetedSends)} ({selectedVertical.pfiLift.toFixed(1)}× lift)
+              {formatCurrency(pfiCpl, 2)}
             </p>
           </div>
           <div>
@@ -882,7 +926,8 @@ export default function PricingPage() {
   const breakdown = useMemo(() => calculateBreakdown(state), [state]);
   const creditDiscount = breakdown.creditDiscountPercent;
   const pfiDiscount = breakdown.pfiDiscountPercent;
-  const pfiTier = getPfiVolumeTier(state.pfiPropertyQty);
+  const channelTiers = PFI_CHANNELS[state.pfiChannel || 'sms'].tiers;
+  const pfiTier = getPfiVolumeTier(state.pfiPropertyQty, channelTiers);
 
   const tabs = ['Pricing', 'ROI Estimate', 'Marketing Spend', 'Summary', 'FAQs'];
   const today = format(new Date(), 'MMMM d, yyyy');
@@ -1224,11 +1269,34 @@ export default function PricingPage() {
                   </div>
                 </div>
 
+                {/* Channel selector */}
                 <div className="mt-3 mb-3">
+                  <label className="text-xs font-medium text-gray-500 block mb-1">
+                    Outreach Channel
+                  </label>
                   <span className="inline-flex rounded-md border border-gray-200 text-xs font-medium overflow-hidden">
-                    <span className="px-3 py-1 bg-white text-gray-900 shadow-sm">
-                      Annual
-                    </span>
+                    {(['sms', 'direct_mail', 'd2d'] as PfiChannel[]).map(
+                      (ch) => (
+                        <button
+                          key={ch}
+                          onClick={() => {
+                            const cfg = PFI_CHANNELS[ch];
+                            update({
+                              pfiChannel: ch,
+                              pfiPricePerProperty: cfg.basePrice,
+                            });
+                          }}
+                          className={cn(
+                            'px-3 py-1 transition-colors',
+                            (state.pfiChannel || 'sms') === ch
+                              ? 'bg-cyan-500 text-white shadow-sm'
+                              : 'bg-white text-gray-600 hover:bg-gray-50'
+                          )}
+                        >
+                          {PFI_CHANNELS[ch].label}
+                        </button>
+                      )
+                    )}
                   </span>
                 </div>
 
@@ -1236,37 +1304,12 @@ export default function PricingPage() {
                   <Feature>
                     {formatCurrency(pfiTier.price, 2)} per property
                   </Feature>
-                  <Feature>Hyper-targeted intelligence</Feature>
+                  <Feature>
+                    +{formatCurrency(PFI_CHANNELS[state.pfiChannel || 'sms'].deliveryCost, 2)}/contact delivery
+                  </Feature>
                   <Feature>AI-powered property analysis</Feature>
-                  <Feature>Same volume discounts apply</Feature>
+                  <Feature>Volume discounts apply</Feature>
                 </ul>
-
-                {/* Price per property input */}
-                <div className="mb-2">
-                  <label className="text-xs font-medium text-gray-500 block mb-1">
-                    Price per Property
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={state.pfiPricePerProperty}
-                      onChange={(e) =>
-                        update({
-                          pfiPricePerProperty: Math.max(
-                            0,
-                            parseFloat(e.target.value) || 0
-                          ),
-                        })
-                      }
-                      className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
 
                 {/* Property qty input */}
                 <div className="mb-2">
@@ -1300,6 +1343,7 @@ export default function PricingPage() {
                 <PfiVolumeTable
                   activeQty={state.pfiPropertyQty}
                   basePrice={state.pfiPricePerProperty}
+                  channel={state.pfiChannel || 'sms'}
                 />
               </div>
             )}

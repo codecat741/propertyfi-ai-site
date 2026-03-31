@@ -1,4 +1,4 @@
-export const VERSION = 'v16.0';
+export const VERSION = 'v16.1';
 
 export interface VolumeTier {
   min: number;
@@ -15,14 +15,59 @@ export const VOLUME_TIERS: VolumeTier[] = [
   { min: 500000, label: '500k+', price: 0.027 },
 ];
 
-export const PFI_VOLUME_TIERS: VolumeTier[] = [
-  { min: 0, label: 'Base', price: 0.25 },
-  { min: 1000, label: '1k+', price: 0.22 },
-  { min: 2500, label: '2.5k+', price: 0.20 },
-  { min: 5000, label: '5k+', price: 0.18 },
-  { min: 10000, label: '10k+', price: 0.16 },
-  { min: 25000, label: '25k+', price: 0.15 },
-];
+/* ── PFI Channel-Based Pricing ─────────────────────────────────────── */
+export type PfiChannel = 'sms' | 'direct_mail' | 'd2d';
+
+export interface PfiChannelConfig {
+  label: string;
+  basePrice: number;
+  deliveryCost: number;
+  tiers: VolumeTier[];
+}
+
+export const PFI_CHANNELS: Record<PfiChannel, PfiChannelConfig> = {
+  sms: {
+    label: 'SMS',
+    basePrice: 0.25,
+    deliveryCost: 0.18,
+    tiers: [
+      { min: 0, label: 'Base', price: 0.25 },
+      { min: 1000, label: '1k+', price: 0.22 },
+      { min: 2500, label: '2.5k+', price: 0.20 },
+      { min: 5000, label: '5k+', price: 0.18 },
+      { min: 10000, label: '10k+', price: 0.16 },
+      { min: 25000, label: '25k+', price: 0.15 },
+    ],
+  },
+  direct_mail: {
+    label: 'Direct Mail',
+    basePrice: 0.75,
+    deliveryCost: 0.50,
+    tiers: [
+      { min: 0, label: 'Base', price: 0.75 },
+      { min: 1000, label: '1k+', price: 0.65 },
+      { min: 2500, label: '2.5k+', price: 0.58 },
+      { min: 5000, label: '5k+', price: 0.52 },
+      { min: 10000, label: '10k+', price: 0.48 },
+      { min: 25000, label: '25k+', price: 0.45 },
+    ],
+  },
+  d2d: {
+    label: 'Door-to-Door',
+    basePrice: 1.00,
+    deliveryCost: 5.00,
+    tiers: [
+      { min: 0, label: 'Base', price: 1.00 },
+      { min: 1000, label: '1k+', price: 0.90 },
+      { min: 2500, label: '2.5k+', price: 0.82 },
+      { min: 5000, label: '5k+', price: 0.75 },
+      { min: 10000, label: '10k+', price: 0.68 },
+      { min: 25000, label: '25k+', price: 0.65 },
+    ],
+  },
+};
+
+export const PFI_VOLUME_TIERS = PFI_CHANNELS.sms.tiers;
 
 export const CREDIT_BASE_PRICE = 0.06;
 export const PFI_DEFAULT_PRICE = 0.25;
@@ -46,6 +91,7 @@ export interface PricingState {
   propertyFiEnabled: boolean;
   pfiPropertyQty: number;
   pfiPricePerProperty: number;
+  pfiChannel: PfiChannel;
 }
 
 /* ── ROI / Conversion Rate Config ──────────────────────────────────── */
@@ -79,5 +125,6 @@ export const DEFAULT_STATE: PricingState = {
   discountPercent: 0,
   propertyFiEnabled: false,
   pfiPropertyQty: 1000,
-  pfiPricePerProperty: PFI_DEFAULT_PRICE,
+  pfiPricePerProperty: PFI_CHANNELS.sms.basePrice,
+  pfiChannel: 'sms',
 };
