@@ -863,11 +863,11 @@ export default function PricingPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">G</span>
+                <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">P</span>
                 </div>
                 <span className="font-bold text-lg text-slate-900">
-                  GlassHouse
+                  PropertyFi
                 </span>
               </div>
               <div className="h-6 w-px bg-gray-300" />

@@ -2,8 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'GlassHouse Pricing Builder',
-  description: 'Interactive pricing calculator for GlassHouse platform services',
+  title: 'PropertyFi Pricing Builder',
+  description: 'Interactive pricing calculator for PropertyFi platform services',
 };
 
 export default function RootLayout({
