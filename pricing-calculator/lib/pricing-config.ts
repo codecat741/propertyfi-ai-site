@@ -1,4 +1,4 @@
-export const VERSION = 'v16.1';
+export const VERSION = 'v16.2';
 
 export interface VolumeTier {
   min: number;
@@ -28,15 +28,15 @@ export interface PfiChannelConfig {
 export const PFI_CHANNELS: Record<PfiChannel, PfiChannelConfig> = {
   sms: {
     label: 'SMS',
-    basePrice: 0.25,
+    basePrice: 0.15,
     deliveryCost: 0.18,
     tiers: [
-      { min: 0, label: 'Base', price: 0.25 },
-      { min: 1000, label: '1k+', price: 0.22 },
-      { min: 2500, label: '2.5k+', price: 0.20 },
-      { min: 5000, label: '5k+', price: 0.18 },
-      { min: 10000, label: '10k+', price: 0.16 },
-      { min: 25000, label: '25k+', price: 0.15 },
+      { min: 0, label: 'Base', price: 0.15 },
+      { min: 1000, label: '1k+', price: 0.13 },
+      { min: 2500, label: '2.5k+', price: 0.12 },
+      { min: 5000, label: '5k+', price: 0.11 },
+      { min: 10000, label: '10k+', price: 0.10 },
+      { min: 25000, label: '25k+', price: 0.09 },
     ],
   },
   direct_mail: {
@@ -70,7 +70,7 @@ export const PFI_CHANNELS: Record<PfiChannel, PfiChannelConfig> = {
 export const PFI_VOLUME_TIERS = PFI_CHANNELS.sms.tiers;
 
 export const CREDIT_BASE_PRICE = 0.06;
-export const PFI_DEFAULT_PRICE = 0.25;
+export const PFI_DEFAULT_PRICE = 0.15;
 
 export const PLATFORM_FIRST_PRICE = 3300;
 export const PLATFORM_ADDITIONAL_PRICE = 1500;
