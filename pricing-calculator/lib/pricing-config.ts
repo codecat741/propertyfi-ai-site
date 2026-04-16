@@ -1,130 +1,76 @@
-export const VERSION = 'v16.2';
+export const VERSION = 'v17.0';
 
-export interface VolumeTier {
-  min: number;
+export type Tier = 'pilot' | 'annual';
+
+export interface TierConfig {
+  id: Tier;
   label: string;
-  price: number;
+  subtitle: string;
+  programFee: number;
+  setupFee: number;
+  termMonths: number;
+  termLabel: string;
+  features: string[];
 }
 
-export const VOLUME_TIERS: VolumeTier[] = [
-  { min: 0, label: 'Base', price: 0.06 },
-  { min: 30000, label: '30k+', price: 0.04 },
-  { min: 50000, label: '50k+', price: 0.03 },
-  { min: 100000, label: '100k+', price: 0.029 },
-  { min: 250000, label: '250k+', price: 0.028 },
-  { min: 500000, label: '500k+', price: 0.027 },
-];
-
-/* ── PFI Channel-Based Pricing ─────────────────────────────────────── */
-export type PfiChannel = 'sms' | 'direct_mail' | 'd2d';
-
-export interface PfiChannelConfig {
-  label: string;
-  basePrice: number;
-  deliveryCost: number;
-  tiers: VolumeTier[];
-}
-
-export const PFI_CHANNELS: Record<PfiChannel, PfiChannelConfig> = {
-  sms: {
-    label: 'SMS',
-    basePrice: 0.15,
-    deliveryCost: 0.18,
-    tiers: [
-      { min: 0, label: 'Base', price: 0.15 },
-      { min: 1000, label: '1k+', price: 0.13 },
-      { min: 2500, label: '2.5k+', price: 0.12 },
-      { min: 5000, label: '5k+', price: 0.11 },
-      { min: 10000, label: '10k+', price: 0.10 },
-      { min: 25000, label: '25k+', price: 0.09 },
+export const TIERS: Record<Tier, TierConfig> = {
+  pilot: {
+    id: 'pilot',
+    label: '90-Day Pilot',
+    subtitle: 'Defined ZIP set · test the model',
+    programFee: 8000,
+    setupFee: 0,
+    termMonths: 3,
+    termLabel: '90-day term',
+    features: [
+      'Defined pilot ZIP set (Raleigh + Wilmington)',
+      'Targeting: 15+ year old architectural & 3-tab roofs',
+      'Excludes structural damage',
+      'Market identification & homeowner matching',
+      'Email outreach, SMS outreach, reporting',
+      '90-day term',
     ],
   },
-  direct_mail: {
-    label: 'Direct Mail',
-    basePrice: 0.75,
-    deliveryCost: 0.50,
-    tiers: [
-      { min: 0, label: 'Base', price: 0.75 },
-      { min: 1000, label: '1k+', price: 0.65 },
-      { min: 2500, label: '2.5k+', price: 0.58 },
-      { min: 5000, label: '5k+', price: 0.52 },
-      { min: 10000, label: '10k+', price: 0.48 },
-      { min: 25000, label: '25k+', price: 0.45 },
-    ],
-  },
-  d2d: {
-    label: 'Door-to-Door',
-    basePrice: 1.00,
-    deliveryCost: 5.00,
-    tiers: [
-      { min: 0, label: 'Base', price: 1.00 },
-      { min: 1000, label: '1k+', price: 0.90 },
-      { min: 2500, label: '2.5k+', price: 0.82 },
-      { min: 5000, label: '5k+', price: 0.75 },
-      { min: 10000, label: '10k+', price: 0.68 },
-      { min: 25000, label: '25k+', price: 0.65 },
+  annual: {
+    id: 'annual',
+    label: 'Annual Market Subscription',
+    subtitle: 'Exclusive managed market coverage',
+    programFee: 72000,
+    setupFee: 3500,
+    termMonths: 12,
+    termLabel: '12-month term',
+    features: [
+      'Full coverage across agreed Raleigh + Wilmington ZIPs',
+      'Targeting: 15+ year old architectural & 3-tab roofs',
+      'Excludes structural damage',
+      'Ongoing market refreshes',
+      'Homeowner matching, email + SMS outreach, reporting',
+      '12-month term',
     ],
   },
 };
 
-export const PFI_VOLUME_TIERS = PFI_CHANNELS.sms.tiers;
+export const SMS_COST_PER_SEND = 0.22;
 
-export const CREDIT_BASE_PRICE = 0.06;
-export const PFI_DEFAULT_PRICE = 0.15;
+export const TARGET_PER_PROPERTY_MIN = 0.13;
+export const TARGET_PER_PROPERTY_MAX = 0.15;
 
-export const PLATFORM_FIRST_PRICE = 3300;
-export const PLATFORM_ADDITIONAL_PRICE = 1500;
-export const EMAIL_BUNDLE_PRICE_ANNUAL = 3000;
-export const DFY_PRICE_QUARTERLY = 1200;
-
-export type BillingPeriod = 'annual' | 'quarterly';
-
-export interface PricingState {
-  platformQty: number;
-  creditQty: number;
-  creditBilling: BillingPeriod;
-  emailQty: number;
-  emailBilling: BillingPeriod;
-  dfyQty: number;
-  dfyBilling: BillingPeriod;
-  discountPercent: number;
-  propertyFiEnabled: boolean;
-  pfiPropertyQty: number;
-  pfiPricePerProperty: number;
-  pfiChannel: PfiChannel;
+export interface CalcState {
+  tier: Tier;
+  marketProperties: number;
+  matchRatePercent: number;
+  smsPerMatch: number;
+  leadConversionPercent: number;
+  winRatePercent: number;
+  avgJobValue: number;
 }
 
-/* ── ROI / Conversion Rate Config ──────────────────────────────────── */
-export interface VerticalConversion {
-  name: string;
-  smsBase: number;   // SMS/Base conversion %
-  email: number;     // Email conversion %
-  dfy: number;       // DFY conversion %
-  pfiLift: number;   // PFI multiplier on targeted sends (3x baseline)
-}
-
-export const VERTICALS: VerticalConversion[] = [
-  { name: 'Exterior Clean', smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Home Cleaning',  smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Standard',       smsBase: 0.70, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Pest & Lawn',    smsBase: 0.60, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Painting',       smsBase: 0.35, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Roofing',        smsBase: 0.30, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Garage',         smsBase: 0.25, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-  { name: 'Mechanical',     smsBase: 0.20, email: 0.10, dfy: 0.10, pfiLift: 3.0 },
-];
-
-export const DEFAULT_STATE: PricingState = {
-  platformQty: 1,
-  creditQty: 10000,
-  creditBilling: 'annual',
-  emailQty: 0,
-  emailBilling: 'annual',
-  dfyQty: 0,
-  dfyBilling: 'quarterly',
-  discountPercent: 0,
-  propertyFiEnabled: false,
-  pfiPropertyQty: 1000,
-  pfiPricePerProperty: PFI_CHANNELS.sms.basePrice,
-  pfiChannel: 'sms',
+export const DEFAULT_STATE: CalcState = {
+  tier: 'annual',
+  marketProperties: 500000,
+  matchRatePercent: 12,
+  smsPerMatch: 3,
+  leadConversionPercent: 1.5,
+  winRatePercent: 30,
+  avgJobValue: 14000,
 };
